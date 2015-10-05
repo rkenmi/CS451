@@ -114,6 +114,8 @@ public class Image
   public class ColorBox {
 	  private int r_min, r_max, g_min, g_max, b_min, b_max;
 	  
+	  public ColorBox(){}
+	  
 	  public Integer getAxisSize(char color){
 		  int colorRange = 0;
 		  
@@ -126,6 +128,15 @@ public class Image
 			  	break;
 		  }
 		  return colorRange;
+	  }
+	  
+	  public char getLongestAxis(){
+		  if ( (r_max - r_min) > (g_max - g_min) && (r_max - r_min) > (b_max - b_min) )
+			  return 'r';
+		  else if ( (g_max - g_min) > (r_max - r_min) && (g_max - g_min) > (b_max - b_min) )
+			  return 'g';
+		  else
+			  return 'b';
 	  }
 	  
 	  public Integer getAvgRed(){
