@@ -111,6 +111,40 @@ public class Image
     System.out.println("RGB Pixel value at ("+x+","+y+"):"+(0xFF & r)+","+(0xFF & g)+","+(0xFF & b));
    }
 
+  public class ColorBox {
+	  private int r_min, r_max, g_min, g_max, b_min, b_max;
+	  
+	  public Integer getAxisSize(char color){
+		  int colorRange = 0;
+		  
+		  switch(color){
+			  case 'r': colorRange = r_max - r_min;
+			  	break;
+			  case 'g': colorRange = g_max - g_min;
+			  	break;
+			  case 'b': colorRange = b_max - b_min;
+			  	break;
+		  }
+		  return colorRange;
+	  }
+	  
+	  public Integer getAvgRed(){
+		  return (r_max - r_min) / 2;
+	  }
+	  
+	  public Integer getAvgGreen(){
+		  return (g_max - g_min) / 2;
+	  }
+	  
+	  public Integer getAvgBlue(){
+		  return (b_max - b_min) / 2;
+	  }
+	  
+  }
+  public void MedianCut(){
+	  
+  }
+  
   public void UCQuant(){
 	  int rgb[] = new int[3];
 	  int matchIndex = 0;
@@ -123,28 +157,9 @@ public class Image
 		  for(int y = 0; y < height; y++){
 			  getPixel(x, y, rgb);
 			  //displayPixelValue(x, y);
-			  /*
-			  if(x == 243 && y == 130){
-				  System.out.println("rgb[0] = " + rgb[0]);
-				 System.out.println("rgb[1] = " + rgb[1]);
-				 System.out.println("rgb[2] = " + rgb[2]);
-				  // 230 | 164 | 0
-			  }
-			  */
+			  
 			  i = 0;
 			  while(i < 256){
-				  //System.out.println("rgb[0] = " + rgb[0]);
-				 // System.out.println("rgb[1] = " + rgb[1]);
-				 // System.out.println("rgb[2] = " + rgb[2]);
-				  //System.out.println(i + "----->  " + LUT[0][i] + ", " + LUT[1][i] + ", " + LUT[2][i]);
-				  if(rgb[2] < 255){
-					  /*
-				  System.out.println(rgb[0] + " :         " +  (LUT[0][i] - 16 )  + "-" + (LUT[0][i] + 16 ) );
-				  System.out.println(rgb[1] + " :         " +  (LUT[1][i] - 16 )  + "-" + (LUT[1][i] + 16 ) );
-				  System.out.println(rgb[2] + " :         " +  (LUT[2][i] - 32 )  + "-" + (LUT[2][i] + 32 ) );
-				  System.out.println("i : " + i + "\n");
-				  */
-				  }
 				  if ( (rgb[0] < LUT[0][i] + 16 && rgb[0] >= LUT[0][i] - 16)
 						  && (rgb[1] < LUT[1][i] + 16 && rgb[1] >= LUT[1][i] - 16)
 						  && (rgb[2] < LUT[2][i] + 32 && rgb[2] >= LUT[2][i] - 32) ){
@@ -153,31 +168,14 @@ public class Image
 				  }
 				  i++;
 			  }
-			  
-			  //System.out.println("x : " + x + "\ny : " + y + "\nMatchIndex : " + matchIndex);
-			  rgb[0] = matchIndex;
-			  rgb[1] = matchIndex;
-			  rgb[2] = matchIndex;
-			  setPixel(x, y, rgb);
-			  
-		  }
-	  }
-	  
-	  for (int x = 0; x < width; x++){
-		  for (int y = 0; y < height; y++){
-			  rgb = new int[3];
-			  getPixel(x, y, rgb);
-			  
 
-			  int currIndex = rgb[0];
-			  rgb[0] = LUT[0][currIndex];
-			  rgb[1] = LUT[1][currIndex];
-			  rgb[2] = LUT[2][currIndex];
+			  rgb[0] = LUT[0][matchIndex];
+			  rgb[1] = LUT[1][matchIndex];
+			  rgb[2] = LUT[2][matchIndex];
 			  
 			  setPixel(x, y, rgb);
 		  }
 	  }
-	  
 	  write2PPM(fileName+"_8bitUCQuant.ppm");
   }
   
