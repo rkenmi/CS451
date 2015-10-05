@@ -21,8 +21,10 @@ public class CS451_Main
 
     //img.display(args[0]+"-out");
     //img.write2PPM("out.ppm");
+    //img.Threshold();
+    img.N_Level(2);
     //img.Grayscale();
-    img.UCQuant();
+    //img.UCQuant();
 
     System.out.println("--Good Bye--");
   }

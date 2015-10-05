@@ -9,28 +9,134 @@ public class ImageQuantization extends Image {
 		  super(fileName);
 	  }
 	  
-	  public void Grayscale(){
+	  public int Grayscale(){
 		  int rgb[] = new int[3];
+		  int grayAvg = 0; // average gray-scale value of all input pixels
 		  int gray = -1;
 		  
 		  for(int x = 0; x < getW(); x++){
 			  for(int y = 0; y < getH(); y++){
 				  getPixel(x, y, rgb);
 				  gray = (int) (Math.round(0.299 * rgb[0]) + (0.587 * rgb[1]) + (0.114 * rgb[2]));
-				  if (gray < 0 || gray > 255)
+				  if (gray < 0 || gray > 255){
 					  System.out.println("error!");
+					  System.exit(1);
+				  }
 
 				  rgb[0] = gray;
 				  rgb[1] = gray;
 				  rgb[2] = gray;
+				  grayAvg += gray;
 				  
 				  setPixel(x, y, rgb);
 			  }
 		  }
 		  write2PPM(getFileName() + "_8bitGrayscale.ppm");
+		  
+		  return Math.round(grayAvg / (getW() * getH()) );
 	  }
 	  
+	  public void Threshold(){
+		  int rgb[] = new int[3];
+		  int grayAvg = Grayscale();
+		  //System.out.println(grayAvg);
+		  int newColor = -1;
+		  
+		  for (int x = 0; x < getW(); x++){
+			  for (int y = 0; y < getH(); y++){
+				  getPixel(x, y, rgb);
+				  
+				  if(rgb[0] > grayAvg) // can be compared to rgb[1] or rgb[2] as well, doesn't matter
+					  newColor = 255;
+				  else
+					  newColor = 0;
 
+					  
+				  rgb[0] = newColor;
+				  rgb[1] = newColor;
+				  rgb[2] = newColor;
+					  
+				  setPixel(x, y, rgb);
+			  }
+		  }
+		  write2PPM(getFileName() + "_Bi-level_Threshold.ppm");
+	  }
+
+	  public void ErrorDiffusion(int x, int y, int qError){
+		  int rgb[] = new int[3];
+		  
+		  if (x - 1 > 0 && y + 1 < getH()){
+			  getPixel(x - 1, y + 1, rgb);
+			  for(int i = 0; i < 3; i++)
+				  rgb[i] += Math.round((qError * ((float)3/16)));
+			  setPixel(x - 1, y + 1, rgb);
+		  }
+		  
+		  if (y + 1 < getH()){
+			  getPixel(x, y + 1, rgb);
+			  for(int i = 0; i < 3; i++)
+				  rgb[i] += Math.round((qError * ((float)5/16)));
+			  setPixel(x, y + 1, rgb);
+		  }
+		  
+		  if (x + 1 < getW()){
+			  getPixel(x + 1, y, rgb);
+			  for(int i = 0; i < 3; i++)
+				  rgb[i] += Math.round((qError * ((float)7/16)));
+			 setPixel(x + 1, y, rgb);
+		  }
+		  
+		  if (x + 1 < getW() && y + 1 < getH()){
+			  getPixel(x + 1, y + 1, rgb);
+			  for(int i = 0; i < 3; i++)
+				  rgb[i] += Math.round((qError * ((float)1/16)));
+			  setPixel(x + 1, y + 1, rgb);
+		  }
+	  }
+	  public void N_Level(int n){
+		  int A_rgb[] = new int[3], B_rgb[] = new int[3];
+		  Grayscale();
+		  Image imgB = new Image(getW(), getH());
+		  int q = -1, qError = -1;
+		  
+		  for(int x = 0; x < getW(); x++){
+			  for(int y = 0; y < getH(); y++){
+				  getPixel(x, y, A_rgb);
+				  
+				  if(n == 2) // bi level
+					  if(A_rgb[0] > 127) // can be compared to rgb[1] or rgb[2] as well, doesn't matter
+						  q = 255;
+					  else
+						  q = 0;
+				  else if (n == 4){
+					  ;
+				  }
+				  
+				  for(int i = 0; i < 3; i++)
+					  B_rgb[i] = q;
+				  
+				  imgB.setPixel(x,  y, B_rgb);
+				  qError = A_rgb[0] - B_rgb[0]; // can be negative! ex: if rgb[0] = 128, 128 - 255 = -127
+				  
+				  if (x > 10 && x < 40 && y == 200){
+					  System.out.println("x : " + x + ", y : " + y + " \nQ Error : " + qError);
+					  System.out.println("     This value = " + A_rgb[0]);
+					  int jihad[] = new int[3];
+					  getPixel(x+1, y, jihad);
+					  System.out.println("            Next value = " + jihad[0]);
+				  }
+
+				  ErrorDiffusion(x, y, qError);
+				  
+				  if (x > 10 && x < 40 && y == 200){
+					  int jihad[] = new int[3];
+					  getPixel(x+1, y, jihad);
+					  System.out.println("            Next value (updated) = " + jihad[0]);
+				  }
+			  }
+		  }
+		  imgB.write2PPM(getFileName() + "_Bi-level_ErrorDiffusion.ppm");
+	  }
 	  public void MedianCut(){
 		  
 	  }
