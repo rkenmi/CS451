@@ -17,11 +17,11 @@ public class CS451_Main
 
     System.out.println("--Welcome to Multimedia Software System--");
 
-    Image img = new Image(args[0]);
+    ImageQuantization img = new ImageQuantization(args[0]);
 
     //img.display(args[0]+"-out");
     //img.write2PPM("out.ppm");
-    
+    //img.Grayscale();
     img.UCQuant();
 
     System.out.println("--Good Bye--");
