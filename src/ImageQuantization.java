@@ -64,32 +64,51 @@ public class ImageQuantization extends Image {
 
 	  public void ErrorDiffusion(int x, int y, int qError){
 		  int rgb[] = new int[3];
+		  float right = ((float)7/16);
+		  float bottomLeft = ((float)3/16);
+		  float bottom = ((float)5/16);
+		  float bottomRight = ((float)1/16);
+		  
+		  int numer = 0, denom = 16;
 		  
 		  if (x - 1 > 0 && y + 1 < getH()){
 			  getPixel(x - 1, y + 1, rgb);
 			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * ((float)3/16)));
+				  rgb[i] += Math.round((qError * (bottomLeft)));
 			  setPixel(x - 1, y + 1, rgb);
 		  }
+		  else {
+			  right *= Math.pow(1 - bottomLeft, -1);
+			  bottom *= Math.pow(1 - bottomLeft, -1);
+			  bottomRight *= Math.pow(1 - bottomLeft, -1);
+		  }
+			  
 		  
 		  if (y + 1 < getH()){
 			  getPixel(x, y + 1, rgb);
 			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * ((float)5/16)));
+				  rgb[i] += Math.round((qError * (bottom)));
 			  setPixel(x, y + 1, rgb);
+		  }
+		  else{
+			  right *= Math.pow(1 - bottom, -1);
+			  bottomRight *= Math.pow(1 - bottom,  -1);
 		  }
 		  
 		  if (x + 1 < getW()){
 			  getPixel(x + 1, y, rgb);
 			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * ((float)7/16)));
+				  rgb[i] += Math.round((qError * (right)));
 			 setPixel(x + 1, y, rgb);
+		  }
+		  else {
+			  bottomRight *= Math.pow(1 - right, -1);
 		  }
 		  
 		  if (x + 1 < getW() && y + 1 < getH()){
 			  getPixel(x + 1, y + 1, rgb);
 			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * ((float)1/16)));
+				  rgb[i] += Math.round((qError * (bottomRight)));
 			  setPixel(x + 1, y + 1, rgb);
 		  }
 	  }
