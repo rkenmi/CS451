@@ -3,6 +3,8 @@ CS451 Multimedia Software Systems
 Computer Science Department
 California State University, Los Angeles
 
+Student: Rick Miyamoto
+
 Compile requirement
 ======================================
 JDK Version 5.0 or above
@@ -17,6 +19,6 @@ javac *.java
 
 Execution Instruction on Command Line:
 ======================================
-java CS451_Main [inputfile]
+java CS451_Main [homework #] [inputfile]
 e.g.
-java CS451_Main Ducky.ppm 
+java CS451_Main 1 Ducky.ppm 
