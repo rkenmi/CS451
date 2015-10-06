@@ -31,7 +31,7 @@ public class ImageQuantization extends Image {
 				  setPixel(x, y, rgb);
 			  }
 		  }
-		  write2PPM(getFileName() + "_8bitGrayscale.ppm");
+		  write2PPM(getFileName() + "_8bit_Grayscale.ppm");
 		  
 		  return Math.round(grayAvg / (getW() * getH()) );
 	  }
@@ -62,99 +62,65 @@ public class ImageQuantization extends Image {
 		  write2PPM(getFileName() + "_Bi-level_Threshold.ppm");
 	  }
 
-	  public void ErrorDiffusion(int x, int y, int qError){
-		  int rgb[] = new int[3];
-		  float right = ((float)7/16);
-		  float bottomLeft = ((float)3/16);
-		  float bottom = ((float)5/16);
-		  float bottomRight = ((float)1/16);
+	  public void ErrorDiffusion(float[][] pixelTable, int x, int y, float qError){
+		  float right = ((float)7/16), bottomLeft = ((float)3/16), bottom = ((float)5/16), bottomRight = ((float)1/16);
 		  
-		  int numer = 0, denom = 16;
+		  if (x > 0 && y + 1 < getH())
+			  pixelTable[y+1][x-1] += (qError * (bottomLeft));
+
+		  if (y + 1 < getH())
+			  pixelTable[y+1][x] += (qError * (bottom));
 		  
-		  if (x - 1 > 0 && y + 1 < getH()){
-			  getPixel(x - 1, y + 1, rgb);
-			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * (bottomLeft)));
-			  setPixel(x - 1, y + 1, rgb);
-		  }
-		  else {
-			  right *= Math.pow(1 - bottomLeft, -1);
-			  bottom *= Math.pow(1 - bottomLeft, -1);
-			  bottomRight *= Math.pow(1 - bottomLeft, -1);
-		  }
-			  
+		  if (x + 1 < getW())
+			  pixelTable[y][x + 1] += (qError * (right));
 		  
-		  if (y + 1 < getH()){
-			  getPixel(x, y + 1, rgb);
-			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * (bottom)));
-			  setPixel(x, y + 1, rgb);
-		  }
-		  else{
-			  right *= Math.pow(1 - bottom, -1);
-			  bottomRight *= Math.pow(1 - bottom,  -1);
-		  }
+		  if (x + 1 < getW() && y + 1 < getH())
+			  pixelTable[y + 1][x + 1] += (qError * (bottomRight));
 		  
-		  if (x + 1 < getW()){
-			  getPixel(x + 1, y, rgb);
-			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * (right)));
-			 setPixel(x + 1, y, rgb);
-		  }
-		  else {
-			  bottomRight *= Math.pow(1 - right, -1);
-		  }
-		  
-		  if (x + 1 < getW() && y + 1 < getH()){
-			  getPixel(x + 1, y + 1, rgb);
-			  for(int i = 0; i < 3; i++)
-				  rgb[i] += Math.round((qError * (bottomRight)));
-			  setPixel(x + 1, y + 1, rgb);
-		  }
 	  }
 	  public void N_Level(int n){
-		  int A_rgb[] = new int[3], B_rgb[] = new int[3];
-		  Grayscale();
-		  Image imgB = new Image(getW(), getH());
-		  int q = -1, qError = -1;
+		  float pixelTable[][] = new float[getH()][getW()];
+		  int rgb[] = new int[3];
+		  this.Grayscale();
+		  float q = -1, qError = -1;
+		 
+		  // quantize grayscale values depending on N
+		  float n_section[] = new float[n];
+		  for(int i = 0; i < n_section.length; i++){
+			  n_section[i] = ((float)255 / (n-1))  * i;
+			  //System.out.println(n_section[i]);
+		  }
 		  
-		  for(int x = 0; x < getW(); x++){
-			  for(int y = 0; y < getH(); y++){
-				  getPixel(x, y, A_rgb);
-				  
-				  if(n == 2) // bi level
-					  if(A_rgb[0] > 127) // can be compared to rgb[1] or rgb[2] as well, doesn't matter
-						  q = 255;
-					  else
-						  q = 0;
-				  else if (n == 4){
-					  ;
-				  }
-				  
-				  for(int i = 0; i < 3; i++)
-					  B_rgb[i] = q;
-				  
-				  imgB.setPixel(x,  y, B_rgb);
-				  qError = A_rgb[0] - B_rgb[0]; // can be negative! ex: if rgb[0] = 128, 128 - 255 = -127
-				  
-				  if (x > 10 && x < 40 && y == 200){
-					  System.out.println("x : " + x + ", y : " + y + " \nQ Error : " + qError);
-					  System.out.println("     This value = " + A_rgb[0]);
-					  int jihad[] = new int[3];
-					  getPixel(x+1, y, jihad);
-					  System.out.println("            Next value = " + jihad[0]);
-				  }
-
-				  ErrorDiffusion(x, y, qError);
-				  
-				  if (x > 10 && x < 40 && y == 200){
-					  int jihad[] = new int[3];
-					  getPixel(x+1, y, jihad);
-					  System.out.println("            Next value (updated) = " + jihad[0]);
-				  }
+		  //init pixelTable
+		  for(int y = 0; y < getH(); y++){
+			  for(int x = 0; x < getW(); x++){
+				  getPixel(x, y, rgb);
+				  pixelTable[y][x] = (float)rgb[0];
 			  }
 		  }
-		  imgB.write2PPM(getFileName() + "_Bi-level_ErrorDiffusion.ppm");
+
+		  float diff = 0, min;
+		  for(int y = 0; y < getH(); y++){
+			  for(int x = 0; x < getW(); x++){
+				  min = Float.MAX_VALUE;
+				  for(int i = 0; i < n_section.length; i++){
+					  diff = Math.abs(pixelTable[y][x] - n_section[i]);
+					  if (diff < min){
+						  min = diff;
+						  q = n_section[i];
+					  }
+				  }
+
+				  qError = pixelTable[y][x] - q; // can be negative!
+				  
+				  for(int i = 0; i < 3; i++)
+					  rgb[i] = Math.round(q);
+				 
+				  ErrorDiffusion(pixelTable, x, y, qError);
+				  setPixel(x,  y, rgb);
+			  }
+		  }
+		  write2PPM(getFileName() + "_n=" + n + "_" + "ErrorDiffusion.ppm");
 	  }
 	  public void MedianCut(){
 		  
@@ -169,10 +135,11 @@ public class ImageQuantization extends Image {
 		  buildLUT();
 		  displayLUT();
 		  
+		  Image indexImg = new Image(getW(), getH());
+		  
 		  for(int x = 0; x < getW(); x++){
 			  for(int y = 0; y < getH(); y++){
 				  getPixel(x, y, rgb);
-				  //displayPixelValue(x, y);
 				  
 				  i = 0;
 				  while(i < 256){
@@ -184,15 +151,27 @@ public class ImageQuantization extends Image {
 					  }
 					  i++;
 				  }
-
-				  rgb[0] = LUT[0][matchIndex];
-				  rgb[1] = LUT[1][matchIndex];
-				  rgb[2] = LUT[2][matchIndex];
 				  
-				  setPixel(x, y, rgb);
+				  for(int j = 0; j < 3; j ++)
+					  rgb[j] = matchIndex;
+				  
+				  indexImg.setPixel(x, y, rgb);
 			  }
 		  }
-		  write2PPM(getFileName() +"_8bitUCQuant.ppm");
+		  indexImg.write2PPM(getFileName() + "-index.ppm");
+		  
+		  for(int x = 0; x < getW(); x++){
+			  for(int y = 0; y < getH(); y++){
+				  indexImg.getPixel(x,  y, rgb);
+				  matchIndex = rgb[0];
+				  for(int j = 0; j < 3; j ++)
+					  rgb[j] = LUT[j][matchIndex]; 
+				  
+				  this.setPixel(x, y, rgb);
+			  }
+		  }
+		  
+		  this.write2PPM(getFileName() +"_8bit_UCQuant.ppm");
 	  }
 	  
 	  public void buildLUT(){
@@ -224,21 +203,14 @@ public class ImageQuantization extends Image {
 	  }
 	  
 	  public void displayLUT(){
-		  String color = "hollow";
-		  
+		  System.out.println("Index        R        G        B      ");
+		  System.out.println("______________________________");
 		  for(int i = 0; i < 256; i++){
-			  System.out.println("i = " + i);
+			  System.out.print(i + "   ");
 			  for(int c = 0; c < 3; c++){
-				  switch(c){
-				  case 0 : color = "Red";
-				  	break;
-				  case 1 : color = "Green";
-				  	break;
-				  case 2 : color = "Blue";
-				  	break;
-				  }
-				  System.out.println("          " + color + " ->    " + LUT[c][i]);
+				  System.out.print("        " + LUT[c][i]);
 			  }
+			  System.out.println();
 		  }
 	  }
 	
