@@ -33,6 +33,7 @@ public class ImageQuantization extends Image {
 		  }
 		  write2PPM(getFileName() + "_8bit_Grayscale.ppm");
 		  
+		  //System.out.println(Math.round(grayAvg / (getW() * getH()) ));
 		  return Math.round(grayAvg / (getW() * getH()) );
 	  }
 	  
@@ -62,8 +63,8 @@ public class ImageQuantization extends Image {
 		  write2PPM(getFileName() + "_Bi-level_Threshold.ppm");
 	  }
 
-	  public void ErrorDiffusion(float[][] pixelTable, int x, int y, float qError){
-		  float right = ((float)7/16), bottomLeft = ((float)3/16), bottom = ((float)5/16), bottomRight = ((float)1/16);
+	  public void ErrorDiffusion(double[][] pixelTable, int x, int y, double qError){
+		  double right = ((double)7/16), bottomLeft = ((double)3/16), bottom = ((double)5/16), bottomRight = ((double)1/16);
 		  
 		  if (x > 0 && y + 1 < getH())
 			  pixelTable[y+1][x-1] += (qError * (bottomLeft));
@@ -79,30 +80,35 @@ public class ImageQuantization extends Image {
 		  
 	  }
 	  public void N_Level(int n){
-		  float pixelTable[][] = new float[getH()][getW()];
+		  double pixelTable[][] = new double[getH()][getW()];
 		  int rgb[] = new int[3];
 		  this.Grayscale();
-		  float q = -1, qError = -1;
+		  double q = -1, qError = -1;
 		 
 		  // quantize grayscale values depending on N
-		  float n_section[] = new float[n];
+		  double n_section[] = new double[n];
 		  for(int i = 0; i < n_section.length; i++){
-			  n_section[i] = ((float)255 / (n-1))  * i;
+			  n_section[i] = ((double)255 / (n-1))  * i;
 			  //System.out.println(n_section[i]);
 		  }
+		  n_section[n_section.length - 1] -= 1; // there are no pixels with a value greater than 254
 		  
 		  //init pixelTable
 		  for(int y = 0; y < getH(); y++){
 			  for(int x = 0; x < getW(); x++){
 				  getPixel(x, y, rgb);
-				  pixelTable[y][x] = (float)rgb[0];
+				  pixelTable[y][x] = (double)rgb[0];
+				  if(rgb[0] > 254)
+				  System.out.println(rgb[0]);
 			  }
 		  }
 
-		  float diff = 0, min;
+		  double diff = 0, min;
 		  for(int y = 0; y < getH(); y++){
 			  for(int x = 0; x < getW(); x++){
-				  min = Float.MAX_VALUE;
+				  //if(pixelTable[y][x] < 0)
+					//  System.out.println(pixelTable[y][x]);
+				  min = Double.MAX_VALUE;
 				  for(int i = 0; i < n_section.length; i++){
 					  diff = Math.abs(pixelTable[y][x] - n_section[i]);
 					  if (diff < min){
@@ -112,9 +118,12 @@ public class ImageQuantization extends Image {
 				  }
 
 				  qError = pixelTable[y][x] - q; // can be negative!
+				  //if(qError < -127)
+				  //System.out.println(qError);
+				  
 				  
 				  for(int i = 0; i < 3; i++)
-					  rgb[i] = Math.round(q);
+					  rgb[i] = (int)Math.round(q);
 				 
 				  ErrorDiffusion(pixelTable, x, y, qError);
 				  setPixel(x,  y, rgb);

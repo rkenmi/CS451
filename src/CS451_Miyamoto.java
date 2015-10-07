@@ -50,6 +50,7 @@ public class CS451_Miyamoto
 	    		break;
 	    	}
 	        System.out.println("--Good Bye--");
+	        img.display(args[1] + "-out");
     	}else{
     		System.err.println("Cannot read image data, is it properly loaded?");
     	}
