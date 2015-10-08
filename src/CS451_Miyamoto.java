@@ -64,6 +64,7 @@ public class CS451_Miyamoto
     }else{
     	System.err.println("The first argument must be the number 1 for Homework 1.");
     }
+    System.exit(0);
   }
 
   public static void usage()
