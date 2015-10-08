@@ -11,7 +11,7 @@ public class CS451_Miyamoto
 {
   public static void main(String[] args)
   {
-    if(args.length == 0 || args.length > 2)
+    if(args.length != 2)
     {
       usage();
       System.exit(1);
@@ -62,13 +62,13 @@ public class CS451_Miyamoto
     	scan.close();
         System.out.println("--Good Bye--");
     }else{
-    	System.err.println("The first argument must be the number 1 for Homework 1.");
+    	System.err.println("Invalid Homework Number!");
     }
     System.exit(0);
   }
 
   public static void usage()
   {
-    System.out.println("\nUsage: java CS451_Main [homework number] [inputfile]\n");
+    System.out.println("\nUsage: java CS451_Miyamoto [homework number] [inputfile]\n");
   }
 }
