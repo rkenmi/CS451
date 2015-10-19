@@ -11,11 +11,7 @@ public class CS451_Miyamoto
 {
   public static void main(String[] args)
   {
-    if(args.length != 2)
-    {
-      usage();
-      System.exit(1);
-    }
+
 
     
     if(args[0].equals("1")){
@@ -67,7 +63,9 @@ public class CS451_Miyamoto
     	System.out.println("2. Dictionary Coding");
     	System.out.println("3. Quit");
     	System.out.print("\nPlease enter the task number [1-3]: ");
-    	;
+    	Aliasing a1 = new Aliasing(1, 10, 0);
+    	a1.display("test");
+   
     }
     else{
     	System.err.println("Invalid Homework Number!");
