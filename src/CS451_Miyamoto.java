@@ -61,7 +61,15 @@ public class CS451_Miyamoto
     	} while (i != 4);
     	scan.close();
         System.out.println("--Good Bye--");
-    }else{
+    }else if (args[0].equals("2")){
+    	System.out.println("Main Menu-----------------------------------");
+    	System.out.println("1. Aliasing");
+    	System.out.println("2. Dictionary Coding");
+    	System.out.println("3. Quit");
+    	System.out.print("\nPlease enter the task number [1-3]: ");
+    	;
+    }
+    else{
     	System.err.println("Invalid Homework Number!");
     }
     System.exit(0);
