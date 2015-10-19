@@ -64,7 +64,7 @@ public class CS451_Miyamoto
     	System.out.println("3. Quit");
     	System.out.print("\nPlease enter the task number [1-3]: ");
     	Aliasing a1 = new Aliasing(1, 10, 0);
-    	a1.display("test");
+    	a1.display("test-out");
    
     }
     else{
