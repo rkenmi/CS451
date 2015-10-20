@@ -11,17 +11,14 @@ public class CS451_Miyamoto
 {
   public static void main(String[] args)
   {
-
-
-    
-    if(args[0].equals("1")){
-    	Scanner scan = new Scanner(System.in);
-    	
-    	int i = -1;
-    	do{
-    	    System.out.println("--Welcome to Multimedia Software System--");
+  	Scanner scan = new Scanner(System.in);
+  	int i1= -1, i2 = -1;
+  	    
+	do{
+	    if(args[0].equals("1") && args.length == 2){
+		    System.out.println("--Welcome to Multimedia Software System--");
 	    	ImageQuantization img = new ImageQuantization(args[1]);
-	
+	    	
 	    	if (img.getSize() != 0){
 		    	System.out.println("Main Menu-----------------------------------");
 		    	System.out.println("1. Conversion to Gray-scale Image (24bits->8bits)");
@@ -30,8 +27,8 @@ public class CS451_Miyamoto
 		    	System.out.println("4. Quit");
 		    	System.out.print("\nPlease enter the task number [1-4]: ");
 		    	
-		    	i = scan.nextInt();
-		    	switch(i){
+		    	i1 = scan.nextInt();
+		    	switch(i1){
 		    	case 1 : img.Threshold();
 		    		break;
 		    	case 2 : {
@@ -50,26 +47,40 @@ public class CS451_Miyamoto
 		    	default : System.out.println("Invalid Task Number.");
 		    			break;
 		    	}
-		    	if (i > 0 && i < 4) // only display image after some work is complete
+		    	if (i1 > 0 && i1 < 4) // only display image after some work is complete
 		    		img.display(args[1] + "-out");
 		        System.out.println("End of Menu---------------------------------\n");
 	    	}
-    	} while (i != 4);
+	    	else break;
+	    } else if (args[0].equals("2")){
+	      	System.out.println("Main Menu-----------------------------------");
+	      	System.out.println("1. Aliasing");
+	      	System.out.println("2. Dictionary Coding");
+	      	System.out.println("3. Quit");
+	      	System.out.print("\nPlease enter the task number [1-3]: ");
+	      	i2 = scan.nextInt();
+	      	switch(i2){
+	      	case 1: {
+	      		int m, n, k = 0;
+	      		System.out.println("Enter M, N, and K");
+	      		m = scan.nextInt();
+	      		n = scan.nextInt();
+	      		k = scan.nextInt();
+		      	System.out.println(m + " " + n + " " + k);
+	      		Aliasing a1 = new Aliasing(m, n, k);
+		      	break;
+	      	}
+	    	case 3 : System.out.println("Quitting.");
+    			break;
+	    	default : System.out.println("Invalid Task Number.");
+    			break;
+	      	}
+	    }
+	} while (i1 != 4 && i2 != 3);
     	scan.close();
         System.out.println("--Good Bye--");
-    }else if (args[0].equals("2")){
-    	System.out.println("Main Menu-----------------------------------");
-    	System.out.println("1. Aliasing");
-    	System.out.println("2. Dictionary Coding");
-    	System.out.println("3. Quit");
-    	System.out.print("\nPlease enter the task number [1-3]: ");
-    	Aliasing a1 = new Aliasing(1, 10, 0);
-    	a1.display("test-out");
-   
-    }
-    else{
-    	System.err.println("Invalid Homework Number!");
-    }
+    
+
     System.exit(0);
   }
 
