@@ -31,7 +31,7 @@ public class Aliasing extends Image {
 		  Integer init_radius = radius;
 		  
 		  while(cX + (radius) < getW()){
-			  for(int deg = 0; deg < 360 * init_radius; deg++){
+			  for(int deg = 0; deg < 360 * radius; deg++){
 				  getPixel(cX + (int)(radius * Math.cos(deg)), cY + (int)(radius * Math.sin(deg)), rgb);
 				  for(int i = 0; i < 3; i++)
 					  rgb[i] = 0;
@@ -39,5 +39,13 @@ public class Aliasing extends Image {
 			  }
 		  	radius += init_radius;
 		  }
+	  }
+	  
+	  public void resize_NoFilter(){
+		  ;
+	  }
+	  
+	  public void resize_AvgFilter(){
+		  ;
 	  }
 }
