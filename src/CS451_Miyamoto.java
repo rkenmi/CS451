@@ -61,15 +61,19 @@ public class CS451_Miyamoto
 	      	i2 = scan.nextInt();
 	      	switch(i2){
 	      	case 1: {
-	      		int m, n, k = 0;
-	      		System.out.println("Enter M, N, and K");
-	      		m = scan.nextInt();
-	      		n = scan.nextInt();
-	      		k = scan.nextInt();
-		      	System.out.println(m + " " + n + " " + k);
+	      		int m = 0, n = 0, k = 0;
+	      		//while( k != 2 && k != 4 && k != 8 && k != 16 ){
+		      		System.out.println("Enter M, N, and K (");
+		      		m = scan.nextInt();
+		      		n = scan.nextInt();
+		      		k = scan.nextInt();
+	      		//}
+		      	System.out.println("Settings: " + m + " " + n + " " + k);
 	      		Aliasing a1 = new Aliasing(m, n, k);
 		      	break;
 	      	}
+	      	case 2 : new DictCoding();
+	      		break;
 	    	case 3 : System.out.println("Quitting.");
     			break;
 	    	default : System.out.println("Invalid Task Number.");
