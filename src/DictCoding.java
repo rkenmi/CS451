@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 public class DictCoding {
 	private List<String> dict;
 	private List<String> encoded = new ArrayList<String>();
-	private String str2encode = "", decoded = "";
+	private String str2encode = null, decoded = "";
 	
 	private int userDictSize, bitsPerSymbol = 8, preDataSize, newDataSize;
 	
@@ -26,8 +26,6 @@ public class DictCoding {
 	public DictCoding(String fileName, int dictSize){
 		this.userDictSize = dictSize;
 		readTXT(fileName);
-	
-
 	}
 	
 	public List<String> getDict() {
@@ -46,7 +44,14 @@ public class DictCoding {
 		this.userDictSize = dictSize;
 	}
 	
-	public void readTXT(String fileName){
+	public Boolean isFileRead(){
+		if (str2encode == null)
+			return false;
+		else
+			return true;
+	}
+	
+	public Boolean readTXT(String fileName){
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
 		    StringBuilder sb = new StringBuilder();
@@ -57,14 +62,16 @@ public class DictCoding {
 		        line = br.readLine();
 		    }
 		    str2encode = sb.toString();
-		    System.out.println(str2encode);
-		    System.out.println(str2encode.length());
+		    //System.out.println(str2encode);
+		    //System.out.println(str2encode.length());
 			System.out.println("Read "+fileName+" Successfully.");
 			br.close();
+			return true;
 		} // try
 		catch(Exception e)
 		{
 			System.err.println(e.getMessage());
+			return false;
 		}
 	}
 	
@@ -85,7 +92,7 @@ public class DictCoding {
 		preDataSize =  (str2encode.length() * bitsPerSymbol);
 	}
 	
-	public void encode() {
+	public List<String> encode() {
 		int codeIndex = 0;
 				
 		initDict();
@@ -113,16 +120,16 @@ public class DictCoding {
 				encoded.add(codeIndex, Integer.toString(dict.indexOf(currSeq)));
 		}
 		
-		System.out.println("Dictionary Size : " + dict.size());
-		System.out.println("Encoded Size : " + encoded.size());
 		newDataSize = encoded.size() * (int) ( Math.log(dict.size()) / Math.log(2) );
 		
 		System.out.println("Data Size before Compression = " + preDataSize + " bits");
 		System.out.println("Data Size after Compression = " + newDataSize + " bits");
 		System.out.println("Compress ratio = " + preDataSize/(double)newDataSize);
+		
+		return encoded;
 	}
 	
-	public void decode (String encodedStr) {
+	public String decode (String encodedStr) {
 		List<String> encodedStrArr = new ArrayList<String>(); // empty encoded array
 		StringTokenizer st = new StringTokenizer(encodedStr, " ");
 		
@@ -131,7 +138,6 @@ public class DictCoding {
 		}
 		
 		initDict();
-		System.out.println(encodedStrArr.size());
 		for(int i = 0; i < encodedStrArr.size(); i++){
 			String k =  encodedStrArr.get(i);
 			String e = dict.get(Integer.parseInt(k));
@@ -150,6 +156,6 @@ public class DictCoding {
 
 			}
 		}
-		System.out.println();
+		return decoded;
 	}
 }

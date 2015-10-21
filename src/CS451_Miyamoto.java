@@ -64,31 +64,47 @@ public class CS451_Miyamoto
 	      	switch(i2){
 	      	case 1: {
 	      		int m = 0, n = 0, k = 0;
-	      		//while( k != 2 && k != 4 && k != 8 && k != 16 ){
-		      		System.out.println("Enter M, N, and K (");
+	      		while( k < 1 || k > 16){
+		      		System.out.println("Enter M, N, and K (1-16) : ");
 		      		m = scan.nextInt();
 		      		n = scan.nextInt();
 		      		k = scan.nextInt();
-	      		//}
+	      		}
 		      	System.out.println("Settings: " + m + " " + n + " " + k);
 	      		Aliasing a1 = new Aliasing(m, n, k);
+		  		a1.resize_NoFilter(k);
+				a1.resize_AvgFilter(k);
+				a1.resize_3x3Filter(k, 1);
+				a1.resize_3x3Filter(k, 2);
 		      	break;
 	      	}
 	      	case 2 : {
-	      		System.out.print("Enter filename: ");
-	      		String fileName = scan.next();
-	      		DictCoding dc = new DictCoding(fileName);
-	      		System.out.println();
-	      		System.out.print("Enter dictionary size: ");
-	      		int d = scan.nextInt();
+	      		String fileName, encodedStr = "", decodedStr;
+	      		int d; // ignore init value
+	      		DictCoding dc = new DictCoding();
+	      		
+	      		while(!dc.isFileRead()){
+		      		System.out.print("Enter filename: ");
+		      		fileName = scan.next();
+		      		dc.readTXT(fileName);
+		      		System.out.println();
+	      		}
+	      		d = -1;
+	      		while(d < 1 || d > 256){
+		      		System.out.print("Enter dictionary size (<=256): ");
+	      			d = scan.nextInt();
+	      		}
 	      		dc.setDictSize(d);
-	      		List<String> enc = new ArrayList<String>();
-	      		dc.encode();
-	      		enc = dc.getEncoded();
-	    		String encodeStr = "";
-	    		for(int i = 0; i < enc.size(); i++) encodeStr += " " + enc.get(i);
-	    		dc.decode(encodeStr);
-	    		System.out.println(dc.getDecoded() + "\n");
+	      		System.out.println();
+	      		
+	      		List<String> enc = dc.encode();
+	    		for(int i = 0; i < enc.size(); i++) 
+	    			encodedStr += " " + enc.get(i);
+	    		
+	    		System.out.println("Encoded Result : " + encodedStr);
+	    		decodedStr = dc.decode(encodedStr);
+	    		System.out.println("Decoded Message : " + decodedStr + "\n");
+	      		
 	      		break;
 	      	}
 

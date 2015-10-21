@@ -9,11 +9,12 @@ public class Aliasing extends Image {
 		  this.k = k;
 		  format_toWhite();
 		  drawCircle(m, n);
-		  
+		  /*
 		  resize_NoFilter(k);
 		  resize_AvgFilter(k);
 		  resize_3x3Filter(k, 1);
 		  resize_3x3Filter(k, 2);
+		  */
 	  }
 	  
 	  public void format_toWhite(){ // Format all pixels to white in image
@@ -41,7 +42,7 @@ public class Aliasing extends Image {
 
 				  for(int i = 0; i < 3; i++)
 					  rgb[i] = 0;
-				  while(thickStep > 0){
+				  while(thickStep > 0 && cX + (radius + thickStep) < getW() ){
 					  setPixel(cX + (int)((radius + thickStep) * Math.cos(deg)), cY + (int)((radius + thickStep) * Math.sin(deg)), rgb);
 					  thickStep--;
 				  }
@@ -49,6 +50,7 @@ public class Aliasing extends Image {
 		  	radius += init_radius;
 		  }
 		  write2PPM("circles_m"+m+"_n"+n+".PPM");
+		  display("circles_m"+m+"_n"+n);
 	  }
 	  
 	  public void resize_NoFilter(Integer k){
@@ -62,6 +64,7 @@ public class Aliasing extends Image {
 			  }
 		  }
 		  newImg.write2PPM("circles_m"+m+"_n"+n+"_k"+k+"_"+"NoFilter.PPM");
+		  newImg.display("circles_m"+m+"_n"+n+"_k"+k+"_"+"NoFilter");
 	  }
 	  
 	  public void resize_AvgFilter(Integer k){
@@ -78,6 +81,7 @@ public class Aliasing extends Image {
 			  }
 		  }
 		  newImg.write2PPM("circles_m"+m+"_n"+n+"_k"+k+"_"+"AvgFilter.PPM");
+		  newImg.display("circles_m"+m+"_n"+n+"_k"+k+"_"+"AvgFilter");
 	  }
 	  
 	  public void resize_3x3Filter(Integer k, Integer choice){
@@ -114,6 +118,7 @@ public class Aliasing extends Image {
 				  newImg.setPixel(x,  y, rgb);
 			  }
 		  newImg.write2PPM("circles_m"+m+"_n"+n+"_k"+k+"_"+"3x3Filter"+"_"+choice+".PPM");
+		  newImg.display("circles_m"+m+"_n"+n+"_k"+k+"_"+"3x3Filter"+"_"+choice);
 
 	  }
 	  
