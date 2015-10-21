@@ -1,3 +1,4 @@
+Homework 2 - Aliasing and Dictionary Coding
 Homework 1 - Image Quantization
 
 CS451 Multimedia Software Systems
@@ -6,6 +7,18 @@ Computer Science Department
 California State University, Los Angeles
 
 Student: Rick Miyamoto
+
+
+Homework 2 - Aliasing
+======================================
+Original - By default, creating a new Aliasing object will draw a circle on the image and display it to the user. This circle is the original image.
+
+The following images are resized from the original image by the constant value K.
+Resize (No Filter) - Based on many test cases, this resized image looks pretty bad compared to the other resized image, especially the sharper edges.
+Resize (Average Filter) - The average filter works very well where the no-filter does pretty bad. Edges show up nicely. However, because this is based on an averaging algorithm, the colors will not be accurate. For example, an image with only white and black pixels will show gray pixels after resizing with the average filter.
+Resize (3x3 Filter 1) - This filter is not as smooth as the average filter (some aliasing can be seen), however the colors are more accurate. 
+Resize (3x3 Filter 2) - This filter by far is the most difficult one to compare and contrast. It is very similar to Filter 1, however there is more color in places where pixels are less represented (for example, the thin vertical lines at the edges of the circle)
+
 
 Compile requirement
 ======================================
