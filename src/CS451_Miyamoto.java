@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /*******************************************************
@@ -80,13 +82,13 @@ public class CS451_Miyamoto
 	      		System.out.print("Enter dictionary size: ");
 	      		int d = scan.nextInt();
 	      		dc.setDictSize(d);
+	      		List<String> enc = new ArrayList<String>();
 	      		dc.encode();
-	      		
+	      		enc = dc.getEncoded();
 	    		String encodeStr = "";
-	    		for(int i = 0; i < encoded.size(); i++) encodeStr += " " + encoded.get(i);
-	    		decode(encodeStr);
-	    		
-	    		System.out.println(decoded + "\n");
+	    		for(int i = 0; i < enc.size(); i++) encodeStr += " " + enc.get(i);
+	    		dc.decode(encodeStr);
+	    		System.out.println(dc.getDecoded() + "\n");
 	      		break;
 	      	}
 

@@ -34,6 +34,10 @@ public class DictCoding {
 		return dict;
 	}
 	
+	public String getDecoded() {
+		return decoded;
+	}
+	
 	public List<String> getEncoded() {
 		return encoded;
 	}
