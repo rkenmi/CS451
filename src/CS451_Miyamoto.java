@@ -75,10 +75,18 @@ public class CS451_Miyamoto
 	      	case 2 : {
 	      		System.out.print("Enter filename: ");
 	      		String fileName = scan.next();
+	      		DictCoding dc = new DictCoding(fileName);
 	      		System.out.println();
 	      		System.out.print("Enter dictionary size: ");
 	      		int d = scan.nextInt();
-	      		new DictCoding(fileName, d);
+	      		dc.setDictSize(d);
+	      		dc.encode();
+	      		
+	    		String encodeStr = "";
+	    		for(int i = 0; i < encoded.size(); i++) encodeStr += " " + encoded.get(i);
+	    		decode(encodeStr);
+	    		
+	    		System.out.println(decoded + "\n");
 	      		break;
 	      	}
 
