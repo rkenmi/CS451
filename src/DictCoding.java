@@ -1,3 +1,8 @@
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -6,27 +11,50 @@ import java.util.StringTokenizer;
 public class DictCoding {
 	private List<String> dict;
 	private List<String> encoded = new ArrayList<String>();
-	private String decoded = "";
+	private String str2encode = "", decoded = "";
 	
-	private int maxDictSize, bitsPerSymbol, preDataSize, newDataSize;
-	private String str;
+	private int userDictSize, maxDictSize = 256, bitsPerSymbol = 8, preDataSize, newDataSize;
 	
 	public DictCoding(){
-		maxDictSize = 256;
-		bitsPerSymbol = 8;
-		//str = "abbaabbaababbaaaabaabba";
-		str = "Multimedia is media and content that uses a combination of different content forms. The term can be used as a noun (a medium with multiple content forms) or as an  adjective describing a medium as having multiple content forms. The term is used in contrast to media which only use traditional forms of printed or hand-produced material. Multimedia includes a combination of text, audio, still images, animation, video, and interactivity content forms. Multimedia is usually recorded and played, displayed or accessed by information content processing devices, such as computerized and electronic devices, but can also be part of a live performance. Multimedia (as an adjective) also describes electronic media devices used to store and experience multimedia content. Multimedia is distinguished from mixed media in fine art; by including audio, for example, it has a broader scope. The term rich media is synonymous for interactive multimedia. Hypermedia can be considered one particular multimedia application.";
+		;
+	}
+	
+	public DictCoding(String fileName, int dictSize){
+		this.userDictSize = dictSize;
+		readTXT(fileName);
 		initDict();
 		encode();
-		System.out.println("preDataSize = " + preDataSize + " bits");
-		System.out.println("newDataSize = " + newDataSize + " bits");
+		System.out.println("Data Size before Compression = " + preDataSize + " bits");
+		System.out.println("Data Size after Compression = " + newDataSize + " bits");
 		System.out.println("Compress ratio = " + preDataSize/(double)newDataSize);
 	
 		String encodeStr = "";
 		for(int i = 0; i < encoded.size(); i++) encodeStr += " " + encoded.get(i);
 		decode(encodeStr);
 		
-		System.out.println(decoded);
+		System.out.println(decoded + "\n");
+	}
+	
+	public void readTXT(String fileName){
+		try{
+			BufferedReader br = new BufferedReader(new FileReader(fileName));
+		    StringBuilder sb = new StringBuilder();
+		    String line = br.readLine();
+
+		    while (line != null) {
+		        sb.append(line);
+		        line = br.readLine();
+		    }
+		    str2encode = sb.toString();
+		    System.out.println(str2encode);
+		    System.out.println(str2encode.length());
+			System.out.println("Read "+fileName+" Successfully.");
+			br.close();
+		} // try
+		catch(Exception e)
+		{
+			System.err.println(e.getMessage());
+		}
 	}
 	
 	public void initDict (){
@@ -34,8 +62,8 @@ public class DictCoding {
 		int di = 0; // dictionary index
 		String temp, old = "";
 		
-		for(int i = 0; i < str.length(); i++){
-			temp = Character.toString(str.charAt(i));
+		for(int i = 0; i < str2encode.length(); i++){
+			temp = Character.toString(str2encode.charAt(i));
 			if(!old.contains(temp)){
 				dict.add(di, temp);
 				old += temp;
@@ -43,24 +71,24 @@ public class DictCoding {
 			}
 		}
 		
-		preDataSize =  (str.length() * bitsPerSymbol);
+		preDataSize =  (str2encode.length() * bitsPerSymbol);
 	}
 	
 	public void encode() {
 		int codeIndex = 0;
 				
 		// begin encoding
-		for(int i = 0; i < str.length(); i++){ // change to str.length() later
-			String currSeq = Character.toString(str.charAt(i) );
+		for(int i = 0; i < str2encode.length(); i++){ // change to str.length() later
+			String currSeq = Character.toString(str2encode.charAt(i) );
 					
-			while( i + 1 < str.length()){
-				String nextChar = Character.toString(str.charAt(i + 1));
+			while( i + 1 < str2encode.length()){
+				String nextChar = Character.toString(str2encode.charAt(i + 1));
 				
 				if ( dict.contains(currSeq + nextChar) ){
 					currSeq = currSeq + nextChar;
 					i++;
 				}else{
-					if(dict.size() < maxDictSize)
+					if(dict.size() < userDictSize)
 						dict.add(dict.size(), currSeq + nextChar); // append to dictionary the new entry
 					
 					encoded.add(codeIndex, Integer.toString(dict.indexOf(currSeq)));
@@ -69,7 +97,7 @@ public class DictCoding {
 				}
 	
 			}
-			if ( i == str.length() - 1 )
+			if ( i == str2encode.length() - 1 )
 				encoded.add(codeIndex, Integer.toString(dict.indexOf(currSeq)));
 		}
 		
@@ -77,24 +105,27 @@ public class DictCoding {
 		newDataSize = encoded.size() * (int) ( Math.log(dict.size()) / Math.log(2) );
 	}
 	
-	public void decode (String encodeStr) {
-		List<String> encodeStrArr = new ArrayList<String>(); // empty encoded array
-		StringTokenizer st = new StringTokenizer(encodeStr, " ");
+	public void decode (String encodedStr) {
+		List<String> encodedStrArr = new ArrayList<String>(); // empty encoded array
+		StringTokenizer st = new StringTokenizer(encodedStr, " ");
 		
 		while (st.hasMoreElements()){
-			encodeStrArr.add(encodeStrArr.size(), (String) st.nextElement() );
+			encodedStrArr.add(encodedStrArr.size(), (String) st.nextElement() );
 		}
 		
 		initDict();
-		for(int i = 0; i < encodeStrArr.size(); i++){
-			String k =  encodeStrArr.get(i);
+		System.out.println(encodedStrArr.size());
+		for(int i = 0; i < encodedStrArr.size(); i++){
+			String k =  encodedStrArr.get(i);
 			String e = dict.get(Integer.parseInt(k));
 			decoded += e;
+			System.out.println(decoded);
+			System.out.println(i);
 
-			if ( i + 1 < encodeStrArr.size() ){
-				String k2 = encodeStrArr.get(i + 1);
+			if ( i + 1 < encodedStrArr.size() ){
+				String k2 = encodedStrArr.get(i + 1);
 				String e2 = dict.get(Integer.parseInt(k2));
-				if( dict.size() < maxDictSize ){
+				if( dict.size() < userDictSize ){
 					if ( dict.contains(e2))
 						dict.add(e + Character.toString(e2.charAt(0)));
 					else 

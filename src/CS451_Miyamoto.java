@@ -72,8 +72,16 @@ public class CS451_Miyamoto
 	      		Aliasing a1 = new Aliasing(m, n, k);
 		      	break;
 	      	}
-	      	case 2 : new DictCoding();
+	      	case 2 : {
+	      		System.out.print("Enter filename: ");
+	      		String fileName = scan.next();
+	      		System.out.println();
+	      		System.out.print("Enter dictionary size: ");
+	      		int d = scan.nextInt();
+	      		new DictCoding(fileName, d);
 	      		break;
+	      	}
+
 	    	case 3 : System.out.println("Quitting.");
     			break;
 	    	default : System.out.println("Invalid Task Number.");
