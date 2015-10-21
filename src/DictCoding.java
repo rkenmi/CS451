@@ -120,11 +120,14 @@ public class DictCoding {
 			String e = dict.get(Integer.parseInt(k));
 			decoded += e;
 			System.out.println(decoded);
-			System.out.println(i);
+			System.out.println(i + " k = " + e);
 
 			if ( i + 1 < encodedStrArr.size() ){
+				System.out.println(dict.size());
 				String k2 = encodedStrArr.get(i + 1);
+				System.out.println(k2);
 				String e2 = dict.get(Integer.parseInt(k2));
+
 				if( dict.size() < userDictSize ){
 					if ( dict.contains(e2))
 						dict.add(e + Character.toString(e2.charAt(0)));
