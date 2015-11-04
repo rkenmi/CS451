@@ -239,5 +239,16 @@ public class Image
       frame.pack();
       frame.setVisible(true);
   }
+  
+  public void DCT (float input[][], float output[][]){
+	  float C_u, C_v;
+	  
+	  for(int u = 0; u < 8; u++){
+		  for(int v = 0; v < 8; v++){
+			  
+		  }
+	  }
+  }
+  
 
 } // Image class
