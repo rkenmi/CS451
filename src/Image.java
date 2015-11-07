@@ -40,6 +40,13 @@ public class Image
 	  readPPM(fileName);
 	  System.out.println("Created an image from " + fileName+ " with size "+width+"x"+height);
   }
+  
+  /*
+  public void copyReplace(BufferedImage i){
+	  img = new BufferedImage(i.getColorModel(), i.copyData(null), i.getColorModel().isAlphaPremultiplied(), null);
+	  height = img.getHeight();
+	  width = img.getWidth();
+  }*/
 
   public int getW()
   {
@@ -51,6 +58,14 @@ public class Image
 	return height;
   }
 
+  public void setW(int width){
+	 this.width = width;
+  }
+  
+  public void setH(int height){
+	  this.height = height;
+  }
+  
   public String getFileName(){
 	  return fileName;
   }

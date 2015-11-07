@@ -148,7 +148,7 @@ public class CS451_Miyamoto
       			for(int j = 0; j < 8; j++)
       				;//System.out.println(inv[i][j]);
       		*/
-      		img.ColorSpaceTransform();
+      		
       		
       		i1 = 4;
       	}
