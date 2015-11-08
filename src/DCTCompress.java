@@ -291,7 +291,7 @@ public class DCTCompress extends Image {
 					}
 			  }
 		  }
-		  System.out.println("For quantization level n = " + this.n);
+		  System.out.println("\nFor quantization level n = " + this.n);
 		  System.out.println("Original image cost is " + img.getWidth() * img.getHeight() * 24 + " bits");
 		  //System.out.println("Old  image HxW : " + getH() + " " + getW());
 		  System.out.println("The  Y values cost is " + totalY + " bits");
@@ -440,8 +440,8 @@ public class DCTCompress extends Image {
 				  }
 			  }
 			  
-			  newImg.display("YoloSwag420");
-			  newImg.write2PPM("yolo.PPM");
+			  newImg.display(getFileName() + "_Resized");
+			  newImg.write2PPM(getFileName()  + "_Resized.PPM");
 			  //System.out.println(newImg.getH() + " " + newImg.getW());
 			  YCbCr = new double[newImg.getH()][newImg.getW()][3];
 			  
@@ -458,8 +458,8 @@ public class DCTCompress extends Image {
 				  oldImg.setPixel(x, y, rgb);
 			  }
 		  }
-		  oldImg.display("YoloSwag420");
-		  oldImg.write2PPM("yolo-old.PPM");
+		  oldImg.display(getFileName() + "_ResizedBack");
+		  oldImg.write2PPM("getFileName()"+"_ResizedBack" + ".PPM");
 	  }
 	  
 	  public void calcDCT (double input[][], double output[][]){
