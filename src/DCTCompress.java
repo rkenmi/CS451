@@ -138,16 +138,16 @@ public class DCTCompress extends Image {
 		  
 		  for(int y = 0; y < newImg.getH(); y+=8){ // newImg.getH()
 			  for(int x = 0; x < newImg.getW(); x+=8){ // newImg.getW()
-				  double [][] inY = new double[8][8], outY = new double[8][8], inCb = new double[8][8], outCb = new double[8][8], inCr = new double[8][8], outCr = new double[8][8];
+				  double [][] preDCT_Y = new double[8][8], postDCT_Y = new double[8][8], preDCT_Cb = new double[8][8], postDCT_Cb = new double[8][8], preDCT_Cr = new double[8][8], postDCT_Cr = new double[8][8];
 				  
 				  for(int j = 0, v = y; v < y + 8; v++, j++){
 					  for(int i = 0, u = x; u < x + 8; u++, i++){
 						  //System.out.println("Y -> j = " + j + ", i = " + i);
-						  inY[j][i] = newY[v][u];
+						  preDCT_Y[j][i] = newY[v][u];
 						  //System.out.println("For Y : (" + v + ", " + u + ")");
 					  }
 				  }
-					calcDCT(inY, outY);
+					calcDCT(preDCT_Y, postDCT_Y);
 				  
 				
 					if(y < subsampleH && x < subsampleW){
@@ -155,25 +155,33 @@ public class DCTCompress extends Image {
 							  for(int i = 0, u = x; u < x + 8; u++, i++){
 								  //System.out.println("[" + v + ", " + u + "] " + "CbCr -> j = " + j + ", i = " + i);
 								  //System.out.println("x/2 : " + x/2);
-								  inCb[j][i] = newCb[v][u];
-								  inCr[j][i] = newCr[v][u];
+								  preDCT_Cb[j][i] = newCb[v][u];
+								  preDCT_Cr[j][i] = newCr[v][u];
 								  //System.out.println("For CbCr : (" + v + ", " + u + ")");
 						  }
 					}
-					calcDCT(inCb, outCb);	
-					calcDCT(inCr, outCr);
+					calcDCT(preDCT_Cb, postDCT_Cb);	
+					calcDCT(preDCT_Cr, postDCT_Cr);
 
 					double inverseDCT_Y [][] = new double[8][8], inverseDCT_Cb [][] = new double[8][8], inverseDCT_Cr [][] = new double[8][8];
-					decalcDCT(outY, inverseDCT_Y);
-					decalcDCT(outY, inverseDCT_Cb);
-					decalcDCT(outY, inverseDCT_Cr);
+					decalcDCT(postDCT_Y, inverseDCT_Y);
+					decalcDCT(postDCT_Y, inverseDCT_Cb);
+					decalcDCT(postDCT_Y, inverseDCT_Cr);
+					
+					if(y == 0 && x == 0){
+						;//pretty8x8display(preDCT_Y);
+						//pretty8x8display(inverseDCT_Y);
+						//pretty8x8display(postDCT_Y);
+					}
 					
 					double [][][] DCT = new double[3][8][8];
-					DCT[0] = outY;
-					DCT[1] = outCb;
-					DCT[2] = outCr;
+					DCT[0] = postDCT_Y;
+					DCT[1] = postDCT_Cb;
+					DCT[2] = postDCT_Cr;
+
 					double [][][] quantizedDCT = Quantization(DCT, this.n);
 					double [][][] restoredDCT = Dequantization(quantizedDCT, this.n);
+
 					
 					/*
 					for(int i = 0; i < 8; i ++)
@@ -597,10 +605,10 @@ public class DCTCompress extends Image {
 						  else
 							  C_v = 1;
 						  
-						 output[x][y] += C_u * C_v * (input[u][v] * Math.cos( ((2*x + 1) * u * Math.PI)  / 16 ) * Math.cos( ((2 * y + 1) * v * Math.PI)  / 16) );
+						 output[x][y] += (1 / (float) 4) * C_u * C_v * (input[u][v] * Math.cos( ((2*x + 1) * u * Math.PI)  / 16 ) * Math.cos( ((2 * y + 1) * v * Math.PI)  / 16) );
 					  }
 				  }
-				  output[x][y] *= (1 / (float) 4);
+
 			  }
 		  }
 
@@ -665,7 +673,7 @@ public class DCTCompress extends Image {
 	  }
 	  
 	  public void pretty8x8display (double[][] table){
-		  System.out.println("\nLet's pretty up that table for ya.\n");
+		  System.out.println("\nPretty Table (values rounded to int) \n");
 		  for(int i = 0; i < 8; i++){
 			  for(int j = 0; j < 8; j++){
 				  System.out.print((int)table[i][j] + "\t");
