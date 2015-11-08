@@ -18,40 +18,205 @@ public class DCTCompress extends Image {
 		  resize();
 		  			//resizeBack();
 		  CStransform();
-		  			//printCb10();
 		  subsample();
 		  		//supersample();
 		  		//CSdetransform();
-		  DCT();
-		  		//printCb10();
-		  
-		  //display("yoloSwag");
+		  DivideBoxes();
+		  //test();
+
 	  }
 	
+	  public void test(){
+		  List<Map.Entry<Integer ,Integer>> pairList= new ArrayList<>();
+		  
+		  double [][] exampleDCT = { 
+				  {-72, -7, -2, -1, 0, 0, 0, 0},
+				  {-1, 8, -8, -1, 0, 0, 0, 0},
+				  {-8, 12, 1, -2, -1, -1, 0, 0},
+				  {-4, 1, 2, 0, 0, 0, 0, 0},
+				  {1, 1, 0, 1, 0, 0, 0, 0},
+				  {0, 0, 1, 0, 0, 0, 0, 0},
+				  {0, 0, 0, 0, 0, 0, 0, 0},
+				  {0, 0, 0, 0, 0, 0, 0, 0}
+		  };
+		  
+		  // AC coefficients
+	  		int totalBits = 0, y = 0, x = 1, c = 0, valCount = 0;
+	  		
+	  		double val = -9999; // only for init
+	  		
+		  		while(y >= 0 && y < 8){
+					  while(x >= 0 && x < 8 && y >= 0 && y < 8){
+						  if (val == -9999) {
+							  val = exampleDCT[y][x];
+							  valCount = 1;
+						  } 
+						  else if( exampleDCT[y][x] != val ){
+							  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
+							  valCount = 1;
+							  val = exampleDCT[y][x];
+						  } else
+							  valCount++;
+						  
+						  //System.out.print(val + "    ");
+						  y++; 
+						  x--;
+					  }
+					  if(x == 5 && y == 8){
+						  
+						  if( exampleDCT[7][7] != val ){
+							  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
+							  valCount = 1;
+							  val = exampleDCT[7][7];
+							  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
+						  }else {
+							  valCount++;
+							  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
+						  }
+						  //System.out.println("\n" + val + "    ");
+						  break;
+					  }
+					  
+					  if(x > 0)
+						  c++;
+
+					  x = 0 + c;
+					  if(c > 0){
+						  x++;
+						  y = 7;
+					  }
+					  
+					  if(y == 8){
+						  x = 1;
+						  y = 7;
+						  c = 1;
+					  }
+					  
+					  //System.out.println();
+					  while(x >= 0 && x < 8 && y >= 0 && y < 8){
+						  if( exampleDCT[y][x] != val ){
+							  
+							  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
+							  valCount = 1;
+							  val = exampleDCT[y][x];
+						  } else
+							  valCount++;
+						  
+						  //System.out.print(val + "    ");
+						  y--; 
+						  x++;
+					  }
+					  if(y > 0)
+						  c++;
+					  
+					  y = 0 + c;
+					  if(c > 0){
+						  y++;
+						  x = 7;
+					  }
+					  //System.out.println();
+		  		}
+		  		
+
+		  		int DCbits = 10, ACbits = 10 - n, RLbits = 6;
+
+		  		int total8x8Bits = 0 + DCbits;
+		  		for(int i  = 0 ; i < pairList.size(); i ++){
+		  			total8x8Bits += (ACbits + RLbits);
+		  			System.out.println(pairList.get(i));
+		  		}
+		  		System.out.println(pairList.size() + " entries");
+
+	  }
+	  
 	  public void setN(int n){
 		  this.n = n;
+	  }
+	  
+	  public void DivideBoxes(){
+		  int totalBits = 0, totalY = 0, totalCb = 0, totalCr = 0;
+		  
+		  for(int y = 0; y < newImg.getH(); y+=8){ // newImg.getH()
+			  for(int x = 0; x < newImg.getW(); x+=8){ // newImg.getW()
+				  double [][] inY = new double[8][8], outY = new double[8][8], inCb = new double[8][8], outCb = new double[8][8], inCr = new double[8][8], outCr = new double[8][8];
+				  
+				  for(int j = 0, v = y; v < y + 8; v++, j++){
+					  for(int i = 0, u = x; u < x + 8; u++, i++){
+						  //System.out.println("Y -> j = " + j + ", i = " + i);
+						  inY[j][i] = newY[v][u];
+						  //System.out.println("For Y : (" + v + ", " + u + ")");
+					  }
+				  }
+					calcDCT(inY, outY);
+				  
+				
+					if(y < subsampleH && x < subsampleW){
+						  for(int j = 0, v = y; v < y + 8; v++, j++)
+							  for(int i = 0, u = x; u < x + 8; u++, i++){
+								  //System.out.println("[" + v + ", " + u + "] " + "CbCr -> j = " + j + ", i = " + i);
+								  //System.out.println("x/2 : " + x/2);
+								  inCb[j][i] = newCb[v][u];
+								  inCr[j][i] = newCr[v][u];
+								  //System.out.println("For CbCr : (" + v + ", " + u + ")");
+						  }
+					}
+					calcDCT(inCb, outCb);	
+					calcDCT(inCr, outCr);
+
+					double inverseDCT_Y [][] = new double[8][8], inverseDCT_Cb [][] = new double[8][8], inverseDCT_Cr [][] = new double[8][8];
+					decalcDCT(outY, inverseDCT_Y);
+					decalcDCT(outY, inverseDCT_Cb);
+					decalcDCT(outY, inverseDCT_Cr);
+					
+					double [][][] DCT = new double[3][8][8];
+					DCT[0] = outY;
+					DCT[1] = outCb;
+					DCT[2] = outCr;
+					double [][][] quantizedDCT = Quantization(DCT, this.n);
+					double [][][] restoredDCT = Dequantization(quantizedDCT, this.n);
+					
+					/*
+					for(int i = 0; i < 8; i ++)
+						for(int j = 0; j < 8; j++){
+							System.out.println("DCT = " + DCT[0][i][j]);
+							System.out.println("Quantized DCT = " + quantizedDCT[0][i][j]);
+						}
+					*/
+					
+					for(int k = 0; k < 3; k++){
+						switch(k){
+						case 0 : totalY += CompressRatio(k, quantizedDCT, this.n);
+							break;
+						case 1 : totalCb += CompressRatio(k, quantizedDCT, this.n);
+							break;
+						case 2 : totalCr += CompressRatio(k, quantizedDCT, this.n);
+							break;
+						}
+						//System.out.println("(" + y + ", " + x + ") @ k = " + k + " --> " + CompressRatio(k, quantizedDCT, this.n) );
+						//totalBits += CompressRatio(k, quantizedDCT, n);
+					}
+			  }
+		  }
+		  System.out.println("\nFor quantization level n = " + this.n);
+		  System.out.println("Original image cost is " + img.getWidth() * img.getHeight() * 24 + " bits");
+		  //System.out.println("Old  image HxW : " + getH() + " " + getW());
+		  System.out.println("The  Y values cost is " + totalY + " bits");
+		  System.out.println("The  Cb values cost is " + totalCb + " bits");
+		  System.out.println("The  Cr values cost is " + totalCr + " bits");
+		  totalBits = totalY + totalCb + totalCr;
+		  System.out.println("Total compressed image cost : " + totalBits + " bits");
+		  System.out.println("Compression Ratio  : " + (img.getWidth() * img.getHeight() * 24) / (double) (totalBits));
 	  }
 	  
 	  public int CompressRatio(int k, double [][][] quantizedTable, int n){
 		  
 		  List<Map.Entry<Integer ,Integer>> pairList= new ArrayList<>();
-		  
-		  double [][] exampleDCT = { 
-				  {200, 1, 0, 0, 0, 0, 0, 0},
-				  {1, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0},
-				  {0, 0, 0, 0, 0, 0, 0, 0}
-		  };
-		  
-		  pretty8x8display(quantizedTable[k]);
+
+		 // pretty8x8display(quantizedTable[k]);
 		  // AC coefficients
 		  		int totalBits = 0, y = 0, x = 1, c = 0, valCount = 0;
 		  		
-		  		double val = -9999;
+		  		double val = -9999; // only for init
 		  		
 			  		while(y >= 0 && y < 8){
 						  while(x >= 0 && x < 8 && y >= 0 && y < 8){
@@ -72,10 +237,10 @@ public class DCTCompress extends Image {
 						  }
 						  if(x == 5 && y == 8){
 							  
-							  if( exampleDCT[7][7] != val ){
+							  if( quantizedTable[k][7][7] != val ){
 								  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
 								  valCount = 1;
-								  val = exampleDCT[7][7];
+								  val = quantizedTable[k][7][7];
 								  pairList.add(new AbstractMap.SimpleEntry<>((int) val, valCount));
 							  }else {
 								  valCount++;
@@ -228,88 +393,6 @@ public class DCTCompress extends Image {
 		  
 	  }
 	  
-	  public void DCT(){
-		  int totalBits = 0, totalY = 0, totalCb = 0, totalCr = 0;
-		  
-		  for(int y = 0; y < newImg.getH(); y+=8){ // newImg.getH()
-			  for(int x = 0; x < newImg.getW(); x+=8){ // newImg.getW()
-				  double [][] inY = new double[8][8], outY = new double[8][8], inCb = new double[8][8], outCb = new double[8][8], inCr = new double[8][8], outCr = new double[8][8];
-				  
-				  for(int j = 0, v = y; v < y + 8; v++, j++)
-					  for(int i = 0, u = x; u < x + 8; u++, i++){
-						  //System.out.println("Y -> j = " + j + ", i = " + i);
-						  //System.out.println("(" + v + ", " + u + ")");
-						  inY[j][i] = newY[v][u];
-
-					  }
-					calcDCT(inY, outY);
-				  
-				
-					if(y < subsampleH && x < subsampleW){
-						  for(int j = 0, v = y; v < y + 8; v++, j++)
-							  for(int i = 0, u = x; u < x + 8; u++, i++){
-								  //System.out.println("[" + v + ", " + u + "] " + "CbCr -> j = " + j + ", i = " + i);
-								  //System.out.println("x/2 : " + x/2);
-								  inCb[j][i] = newCb[v][u];
-								  inCr[j][i] = newCr[v][u];
-						  }
-					}
-					calcDCT(inCb, outCb);	
-					calcDCT(inCr, outCr);
-
-					double inverseDCT_Y [][] = new double[8][8], inverseDCT_Cb [][] = new double[8][8], inverseDCT_Cr [][] = new double[8][8];
-					decalcDCT(outY, inverseDCT_Y);
-					decalcDCT(outY, inverseDCT_Cb);
-					decalcDCT(outY, inverseDCT_Cr);
-					
-					double [][][] DCT = new double[3][8][8];
-					DCT[0] = outY;
-					DCT[1] = outCb;
-					DCT[2] = outCr;
-					double [][][] quantizedDCT = Quantization(DCT, this.n);
-					double [][][] restoredDCT = Dequantization(quantizedDCT, this.n);
-					
-					/*
-					for(int i = 0; i < 8; i ++)
-						for(int j = 0; j < 8; j++){
-							System.out.println("DCT = " + DCT[0][i][j]);
-							System.out.println("Quantized DCT = " + quantizedDCT[0][i][j]);
-						}
-					*/
-					
-					for(int k = 0; k < 3; k++){
-						switch(k){
-						case 0 : totalY += CompressRatio(k, quantizedDCT, this.n);
-							break;
-						case 1 : totalCb += CompressRatio(k, quantizedDCT, this.n);
-							break;
-						case 2 : totalCr += CompressRatio(k, quantizedDCT, this.n);
-							break;
-						}
-						System.out.println("(" + y + ", " + x + ") @ k = " + k + " --> " + CompressRatio(k, quantizedDCT, this.n) );
-						//totalBits += CompressRatio(k, quantizedDCT, n);
-					}
-			  }
-		  }
-		  System.out.println("\nFor quantization level n = " + this.n);
-		  System.out.println("Original image cost is " + img.getWidth() * img.getHeight() * 24 + " bits");
-		  //System.out.println("Old  image HxW : " + getH() + " " + getW());
-		  System.out.println("The  Y values cost is " + totalY + " bits");
-		  System.out.println("The  Cb values cost is " + totalCb + " bits");
-		  System.out.println("The  Cr values cost is " + totalCr + " bits");
-		  totalBits = totalY + totalCb + totalCr;
-		  System.out.println("Total compressed image cost : " + totalBits + " bits");
-		  System.out.println("Compression Ratio  : " + (img.getWidth() * img.getHeight() * 24) / (double) (totalBits));
-	  }
-	  
-	  public void printCb10(){ // debugging function
-		  for(int y = getH() - 10; y < getH() - 9; y++)
-			  for(int x = getW() - 10; x < getW(); x++){
-				  System.out.println("At (" + y + ", " + x + ") : " + YCbCr[y][x][1]);
-			  }
-		  System.out.println("End.");
-	  }
-	  
 	  public void subsample(){
 		  int newH = newImg.getH() / 2, newW = newImg.getW() / 2;
 		  newY = new double[newImg.getH()][newImg.getW()];
@@ -439,13 +522,14 @@ public class DCTCompress extends Image {
 					  }
 				  }
 			  }
-			  
-			  newImg.display(getFileName() + "_Resized");
-			  newImg.write2PPM(getFileName()  + "_Resized.PPM");
-			  //System.out.println(newImg.getH() + " " + newImg.getW());
-			  YCbCr = new double[newImg.getH()][newImg.getW()][3];
-			  
+		  } else{
+			  newImg = this;
 		  }
+		  
+		  newImg.display(getFileName() + "_Resized");
+		  newImg.write2PPM(getFileName()  + "_Resized.PPM");
+		  System.out.println(newImg.getH() + " " + newImg.getW());
+		  YCbCr = new double[newImg.getH()][newImg.getW()][3];
 	  }
 	  
 	  public void resizeBack(){
