@@ -14,7 +14,7 @@ public class CS451_Miyamoto
   public static void main(String[] args)
   {
   	Scanner scan = new Scanner(System.in);
-  	int i1= -1, i2 = -1;
+  	int i1= -1, i2 = -1, i3 = -1;
   	    
 	do{
 	    if(args[0].equals("1") && args.length == 2){
@@ -115,39 +115,13 @@ public class CS451_Miyamoto
 	      	}
 	    }
       	else if (args[0].equals("3") && args.length == 2 ){
-      		DCTCompress img = new DCTCompress(args[1]);
+      		int n_choice = -1;
+      		while( n_choice < 0 || n_choice > 5){
+		      	System.out.print("\nPlease enter n value (0-5) for quantization : ");
+		      	n_choice = scan.nextInt();
+      		}
       		
-      		/*
-      		double in [][] = { 
-      				{139, 144, 149, 153, 155, 155, 155, 155},
-      				{144, 151, 153, 156, 159, 156, 156, 156},
-      				{150, 155, 160, 163, 158, 156, 156, 156},
-      				{159, 161, 162, 160, 160, 159, 159, 159},
-      				{159, 160, 161, 162, 162, 155, 155, 155},
-      				{161, 161, 161, 161, 160, 157, 157, 157},
-      				{162, 162, 161, 163, 162, 157, 157, 157},
-      				{162, 162, 161, 161, 163, 158, 158, 158}
-      		};
-      		double out [][] = new double[8][8];
-      		
-      		for(int i = 0; i < 8; i++)
-      			for(int j = 0; j < 8; j++)
-      				in [i][j] -= 128;
-      		
-      		img.DCT(in, out);
-      		
-      		double inv [][] = new double[8][8];
-      		
-      		img.InverseDCT(out, inv);
-      		
-      		for(int i = 0; i < 8; i++)
-      			for(int j = 0; j < 8; j++)
-      				inv[i][j] += 128;
-      		
-      		for(int i = 0;  i < 8; i ++)
-      			for(int j = 0; j < 8; j++)
-      				;//System.out.println(inv[i][j]);
-      		*/
+      		DCTCompress img = new DCTCompress(args[1], n_choice);
       		
       		
       		i1 = 4;
