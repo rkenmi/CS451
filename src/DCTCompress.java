@@ -5,23 +5,17 @@ import java.util.Map;
 
 
 public class DCTCompress {
-	
-		Image img;
-		double [][][] YCbCr; // original YCbCr after transformation from RGB
-		double [][] newY;
-		double [][] newCb; // subsampled Cb
-		double [][] newCr; // subsampled Cr
-		int origH, resizedH, origW, resizedW, ss_CbCrW = 0, ss_CbCrH = 0, n = 0;
+		int origH, resizedH, origW, resizedW, ss_CbCrW = 0, ss_CbCrH = 0, n = 0, sum = 0, Ysum = 0, Cbsum = 0, Crsum = 0;
 
 	  public DCTCompress(String fileName, int n){
-		  img = new Image (fileName);
+		  Image img = new Image (fileName);
 		  this.n = n;
 
 		  // Encoding Steps
-		  img = resize();
-		  img.display("After resize");
-		  double [][][] YCbCr = new double[3][resizedH][resizedW];
-		  CStransform(YCbCr);
+		  Image resizedImg = resize(img);
+		  resizedImg.display("After resize");
+		  resizedImg.write2PPM("(Resized) " + fileName);
+		  double [][][] YCbCr = CStransform(resizedImg);
 		  double [][][] subsampled_YCbCr = subsample(YCbCr);
 		  double [][][] postDCT = DCT(subsampled_YCbCr);
 		  double [][][] quantizedDCT = Quantization(postDCT);
@@ -32,10 +26,21 @@ public class DCTCompress {
 		  double [][][] dequantizedDCT = Dequantization(quantizedDCT);
 		  double [][][] preDCT = inverseDCT(dequantizedDCT);
 		  YCbCr = supersample(preDCT);
-		  CSdetransform(YCbCr);
-		  Image orig = resizeBack();
-		  orig.display("Resize back to original, removing padding");
-
+		  Image detransformImg = CSdetransform(YCbCr);
+		  Image restoredImg = resizeBack(detransformImg);
+		  restoredImg.display("Resized back");
+		  restoredImg.write2PPM("(Restored) "+ fileName);
+		  
+		  // Output
+		  System.out.println("\nFor quantization level n = " + this.n);
+		  System.out.println("Original image cost is " + origW * origH * 24 + " bits");
+		  System.out.println("The  Y values cost is " + Ysum + " bits");
+		  System.out.println("The  Cb values cost is " + Cbsum + " bits");
+		  System.out.println("The  Cr values cost is " + Crsum + " bits");
+		  sum = Ysum + Cbsum + Crsum;
+		  System.out.println("Total compressed image cost : " + sum + " bits");
+		  System.out.println("Compression Ratio  : " + (origW * origH * 24) / (double) (sum));
+		  
 	  }
 
 	  public void print1stRow(double [][][] arr){
@@ -166,17 +171,6 @@ public class DCTCompress {
 			  }
 		  }
 		  return postDCT;
-		  /*
-		  System.out.println("\nFor quantization level n = " + this.n);
-		  System.out.println("Original image cost is " + img.getWidth() * img.getHeight() * 24 + " bits");
-		  //System.out.println("Old  image HxW : " + getH() + " " + getW());
-		  System.out.println("The  Y values cost is " + totalY + " bits");
-		  System.out.println("The  Cb values cost is " + totalCb + " bits");
-		  System.out.println("The  Cr values cost is " + totalCr + " bits");
-		  totalBits = totalY + totalCb + totalCr;
-		  System.out.println("Total compressed image cost : " + totalBits + " bits");
-		  System.out.println("Compression Ratio  : " + (img.getWidth() * img.getHeight() * 24) / (double) (totalBits));
-		  */
 	  }
 	  
 	  public double[][][] Quantization(double [][][] DCT){
@@ -227,9 +221,8 @@ public class DCTCompress {
 		  return restoredDCT;
 	  }
 	  
-	  public int CompressRatio(double [][][] quantizedTable){
+	  public void CompressRatio(double [][][] quantizedTable){
 		  double [][][] quantized8x8 = new double [3][8][8];
-		  int sum = 0;
 		  
 		  for(int y = 0; y < resizedH; y+=8){
 			  for(int x = 0; x < resizedW; x+=8){ 
@@ -239,14 +232,19 @@ public class DCTCompress {
 							  quantized8x8[k][j][i] = quantizedTable[k][v][u];
 						  }
 					  
-					  sum += Zigzag8x8(k, quantized8x8);
+					  switch(k){
+						  case 0 : Ysum += Zigzag8x8(k, quantized8x8);
+						  	break;
+						  case 1 : Cbsum += Zigzag8x8(k, quantized8x8);
+						  	break;
+						  case 2 : Crsum += Zigzag8x8(k, quantized8x8);
+						  	break;
+					  }
+					  
 				  }
-				  
-				  
+
 			  }
 		  }
-		  System.out.println(sum + " bits");
-		  return sum;
 	  }
 	  
 	  public int Zigzag8x8(int k, double [][][] quantized8x8){
@@ -435,7 +433,7 @@ public class DCTCompress {
 	  }
 	  
 	  public double[][][] subsample(double [][][] YCbCr){
-		  newY = new double[resizedH][resizedW];
+		  double [][] newY = new double[resizedH][resizedW];
 		  
 		  // Copy YCbCr[][][0] to newY
 		  for(int y = 0; y < resizedH; y++){
@@ -448,8 +446,6 @@ public class DCTCompress {
 		  
 		  for(int y = 0; y < resizedH; y+=8)
 			  for(int x = 0; x < resizedW; x+=8){
-				  //System.out.println("Old         y = " + y + " x = " + x + " -> " + YCbCr[y][x][1]);
-				  
 				  for(int v = y; v < y + 8; v+=2)
 					  for(int u = x; u < x + 8; u+=2){
 						  double avgCbBlock = (YCbCr[1][v][u] + YCbCr[1][v][u+1] + YCbCr[1][v+1][u] + YCbCr[1][v+1][u+1]) / (float) 4;
@@ -458,7 +454,6 @@ public class DCTCompress {
 						 YCbCr[1][v/2][u/2] = avgCbBlock;
 						  YCbCr[2][v/2][u/2] = avgCrBlock;
 					  }
-				  //System.out.println("New         y = " + y + " x = " + x + " -> " + YCbCr[y][x][1]);
 			  }
 		  
 		  // If new Cb, Cr size is not divisible by 8, pad with zeroes
@@ -466,26 +461,23 @@ public class DCTCompress {
 		  
 		  if(CbCrH % 8 != 0){
 			  CbCrH = (CbCrH) + 4;
-			  
 		  }
 		  if(CbCrW % 8 != 0){
 			  CbCrW = (CbCrW) + 4;
 		  }
 		  
-		  //System.out.println("New Cb/Cr width: " + newW + "  vs " + newImg.getW() / 2);
-		  //System.out.println("New Cb/Cr height: " + newH + "  vs " + newImg.getH() / 2);
 		  ss_CbCrW = CbCrW;
 		  ss_CbCrH = CbCrH;
 		  
 		  
 		  // Create newCb, newCr with the appropriate max indices
 		  
-		  newCb = new double[CbCrH][CbCrW];
-		  newCr = new double[CbCrH][CbCrW];
+		  double [][] newCb = new double[CbCrH][CbCrW];
+		  double [][] newCr = new double[CbCrH][CbCrW];
 		  
 		  // Fill newCb, newCr using YCbCr
 		  
-		  if(CbCrW != resizedW / 2 || CbCrH != resizedH / 2){
+		  if ( (CbCrW != resizedW / 2 || CbCrH != resizedH / 2) ){
 			  for(int y = 0; y < CbCrH; y++){
 				  for(int x = 0; x < CbCrW; x++){
 					  if(x > resizedW / 2 || y > resizedH / 2){
@@ -495,7 +487,13 @@ public class DCTCompress {
 						  newCb[y][x] = YCbCr[1][y][x];
 						  newCr[y][x] = YCbCr[2][y][x];
 					  }
-					  //System.out.println("Subsampled Cb at y = " + y + " and x = " + x + ": " + newCb[y][x]);
+				  }
+			  }
+		  } else {
+			  for(int y = 0; y < CbCrH; y++){
+				  for(int x = 0; x < CbCrW; x++){
+					  newCb[y][x] = YCbCr[1][y][x];
+					  newCr[y][x] = YCbCr[2][y][x];
 				  }
 			  }
 		  }
@@ -523,7 +521,7 @@ public class DCTCompress {
 		  return newYCbCr;
 	  }
 	  
-	  public Image resize(){
+	  public Image resize(Image img){
 		  
 		  origH = img.getH();
 		  if(img.getH() % 8 != 0){
@@ -562,7 +560,7 @@ public class DCTCompress {
 		  return img;
 	  }
 	  
-	  public Image resizeBack(){
+	  public Image resizeBack(Image img){
 		  Image newImg = new Image(origW, origH);
 		  for(int y = 0; y < origH; y++){
 			  for(int x = 0; x < origW; x++){
@@ -572,8 +570,7 @@ public class DCTCompress {
 				  newImg.setPixel(x, y, rgb);
 			  }
 		  }
-		  img = newImg;
-		  return img;
+		  return newImg;
 	  }
 	  
 	  public void calcDCT (double input[][], double output[][]){
@@ -636,8 +633,9 @@ public class DCTCompress {
 
 	  }
 	  
-	  public void CStransform(double [][][] YCbCr) { 		  // Color Space Transformation
+	  public double[][][] CStransform(Image img) { 		  // Color Space Transformation
 		  int rgb[] = new int[3];
+		  double[][][] YCbCr = new double[3][resizedH][resizedW];
 		  
 		  for(int y = 0; y < resizedH; y++)
 			  for(int x = 0; x < resizedW; x++){
@@ -662,11 +660,13 @@ public class DCTCompress {
 				  YCbCr[1][y][x] -= 0.5;
 				  YCbCr[2][y][x] -= 0.5;
 			  }
+		  	return YCbCr;
 	  }
 	
 	  
-	  public void CSdetransform(double[][][] YCbCr){ 		  // Inverse Color Space Transformation
+	  public Image CSdetransform(double[][][] YCbCr){ 		  // Inverse Color Space Transformation
 		  int rgb[] = new int[3];
+		  Image img = new Image(resizedW, resizedH);
 		  
 		  for(int y = 0; y < resizedH; y++)
 			  for(int x = 0; x < resizedW; x++){
@@ -688,6 +688,7 @@ public class DCTCompress {
 				  }
 				  img.setPixel(x, y, rgb);
 			  }
+		  return img;
 	  }
 	  
 	  public void pretty8x8display (double[][] table){

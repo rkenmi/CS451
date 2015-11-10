@@ -1,3 +1,4 @@
+Homework 3 - DCT-Based Image Compression
 Homework 2 - Aliasing and Dictionary Coding
 Homework 1 - Image Quantization
 
@@ -8,6 +9,21 @@ California State University, Los Angeles
 
 Student: Rick Miyamoto
 
+Homework 3 - DCT-Based Image Compression
+======================================
+This program is based on a new class called DCTCompress which does not extend the Image class like the other classes, but it does use the Image class. This is done for a bit more readability and simplification. When the constructor is called with the appropriate parameters (A file name string, and n, the quantization level integer), it will create two images for you. 
+
+One will be the resized padded image, immediately after the resizing step. This step is more so for debugging purposes and probably optional for the instructor so the line
+
+resizedImg.write2PPM("(Resized) " + fileName);
+
+in the constructor of the DCTCompress class may be ommitted or commented out.
+
+The second image is the final decomposed product, which is done after the color-space transform, subsampling, DCT, quantization, calculating compression ratio, and then the inverse steps (dequantization, inverse DCT, supersample, inverse color-space transform, remove padding and resize back).
+
+Again for simplicity, this program wasn't designed to loop unlike the other programs/homeworks since the assignment instructions did not specify too.
+
+The newly created PPM images will have "(Resized)" or "(Restored)" attached to the front of the original file name.
 
 Homework 2 - Aliasing (Findings)
 ======================================

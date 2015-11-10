@@ -123,7 +123,6 @@ public class CS451_Miyamoto
       		
       		DCTCompress img = new DCTCompress(args[1], n_choice);
       		
-      		scan.nextInt();
       		i1 = 4;
       	}
 	} while (i1 != 4 && i2 != 3);
