@@ -21,7 +21,7 @@ in the constructor of the DCTCompress class may be ommitted or commented out.
 
 The second image is the final decomposed product, which is done after the color-space transform, subsampling, DCT, quantization, calculating compression ratio, and then the inverse steps (dequantization, inverse DCT, supersample, inverse color-space transform, remove padding and resize back).
 
-Again for simplicity, this program wasn't designed to loop unlike the other programs/homeworks since the assignment instructions did not specify too.
+Again for simplicity, this program wasn't designed to loop unlike the other programs/homeworks since the assignment instructions did not specify to.
 
 The newly created PPM images will have "(Resized)" or "(Restored)" attached to the front of the original file name.
 
