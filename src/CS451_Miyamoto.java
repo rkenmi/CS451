@@ -125,6 +125,18 @@ public class CS451_Miyamoto
       		
       		i1 = 4;
       	}
+      	else if (args[0].equals("4") && args.length == 1 ){
+      		int n_choice = -1;
+      		/*
+      		while( n_choice < 0 || n_choice > 5){
+		      	System.out.print("\nPlease enter n value (0-5) for quantization : ");
+		      	n_choice = scan.nextInt();
+      		}
+      		*/
+      		MC Hammer = new MC(16, 4);
+      		
+      		i1 = 4;
+      	}
 	} while (i1 != 4 && i2 != 3);
     	scan.close();
         System.out.println("--Good Bye--");
