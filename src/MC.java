@@ -8,13 +8,13 @@ import java.util.List;
 
 public class MC {
 	
-	private List <MacroBlock> macroBlocks;
+	private List <MacroBlock> targetBlocks;
 	private Image ref, tar, err;
 	private int n, p;
 	
 	class MacroBlock {
 		public int n, residual, x, y, dx, dy; // positionX and positionY are based on x and y coordinate of Image
-		private int values[][], errors[][];
+		private int errors[][], valuesGray[][], valuesRGB[][][];
 		private Image src;
 		
 		public MacroBlock(int x, int y, int n, char mode) {
@@ -26,7 +26,8 @@ public class MC {
 			this.n = n;
 			this.x = x;
 			this.y = y;
-			this.values = new int[n][n];
+			this.valuesGray = new int[n][n];
+			this.valuesRGB = new int[n][n][3];
 			fill();
 		}
 		
@@ -37,9 +38,26 @@ public class MC {
 						int rgb [] = new int [3];
 						
 						src.getPixel(i, j, rgb);
+						
+						valuesRGB[u][v] = rgb;
+						
 						int gray = (int) Math.round(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
-						values[u][v] = gray;
+						valuesGray[u][v] = gray;
 				
+					}
+				}
+			}
+		}
+		
+		public void compose(Image empty){
+			if (valuesRGB != null){
+				for(int v = 0, j = y; j < y + n; j++, v++){
+					for(int u  = 0, i = x; i < x + n; i++, u++){
+						if(i < err.getW() && i > 0 && j < err.getH() && j > 0){
+							int rgb [] = valuesRGB[u][v];
+							
+							empty.setPixel(i, j, rgb);
+						}
 					}
 				}
 			}
@@ -57,68 +75,101 @@ public class MC {
 							else if (errors[u][v] < 0)
 								errors[u][v] = 0;
 							
-							for(int a = 0; a < 3; a++)
-								rgb[a] = errors[u][v];
-							
+							for(int m = 0; m < 3; m++){
+								rgb[m] = errors[u][v];
+							}
 							
 							err.setPixel(i,  j, rgb);
-
 						}
 					}
 				}
 			}
 		}
-		
-		public void setValue(int i, int j, int val){
-			this.values[i][j] = val;
-		}
-		
-		public int getValue(int i, int j){
-			return values[i][j];
-		}
-		
-		public int getMacroBlockSize(){
-			return n;
-		}
-		
-		
 	}
 	
-	// Assume i1 and i2 is converted to grayscale already
-	public MC(int n, int p) {
-		int curRow = 0;
-		ref = new Image("Walk_059.ppm");
-		tar = new Image("Walk_060.ppm");
-		err = new Image(ref.getW(), ref.getH());
+	public MC(int n, int p, Image ref, Image tar) {
+		this.ref = ref;
+		this.tar = tar;
+		this.err = new Image(ref.getW(), ref.getH());
 		this.n = n;
 		this.p = p;
 		
-		makeMacroBlocks(ref, tar, n, p);
+		targetBlocks = new ArrayList<MacroBlock>();
+		makeMacroBlocks(tar, n, p, targetBlocks);
+		
+		for(int i = 0; i < targetBlocks.size(); i++){
+			fullSearch( targetBlocks.get(i), n, p );	
+			targetBlocks.get(i).composeError(err);
+		}
+		
+	}
+	
+	public void rmMovingObj(Image fifth){
+		int dynM = -1, staM = -1; // matching index pairs (closest corresponding static block to dynamic block)
+		
+		// Dynamic = dyn
+		for(int dyn = 0; dyn < targetBlocks.size(); dyn++){
+			if (targetBlocks.get(dyn).dx != 0 || targetBlocks.get(dyn).dy != 0){
+				double minDist = 999999;
+				
+				// Static = sta
+				for(int sta = 0; sta < targetBlocks.size(); sta++){
+					if (targetBlocks.get(sta).dx == 0 && targetBlocks.get(sta).dy == 0){
+						int deltaX= targetBlocks.get(dyn).x - targetBlocks.get(sta).x;
+						int deltaY = targetBlocks.get(dyn).y - targetBlocks.get(sta).y;
+						deltaX = deltaX * deltaX;
+						deltaY = deltaY * deltaY;
+						double dist = Math.sqrt(deltaX + deltaY);
+						if(dist < minDist){
+							minDist = dist;
+							dynM = dyn;
+							staM = sta;
+						}
+					}
+				}
+				
+				// 5th Frame
+				List<MacroBlock> fifthBlocks = null;
+				makeMacroBlocks(fifth, n, p, fifthBlocks);
+				
+				
+				// replace block
+				targetBlocks.get(dynM).valuesRGB = targetBlocks.get(staM).valuesRGB;
+			}
+		}
+		
+		Image rm = new Image(ref.getW(), ref.getH());
+		for(int i = 0; i < targetBlocks.size(); i++){
+			targetBlocks.get(i).compose(rm);
+		}
+		rm.write2PPM("removed_DynamicStatic.PPM");
+	}
+	
+	public void mv2txt(){
 		BufferedWriter bw = null;
 		try{
+			int curRow = 0;
 			File txt = new File("mv.txt");
 			bw = new BufferedWriter(new FileWriter(txt));
 			bw.write("# Name: Rick Miyamoto");
 			bw.newLine();
-			bw.write("# Target image name: ");
+			bw.write("# Target image name: " + tar.getFileName() + ".ppm");
 			bw.newLine();
-			bw.write("# Reference image name: ");
+			bw.write("# Reference image name: " + ref.getFileName() + ".ppm");
 			bw.newLine();
 			bw.write("# Number of target macro blocks: " + tar.getW() / n + " x " + tar.getH() / n + " (image size is " + tar.getW() + " x " + tar.getH() + ")");
 			bw.newLine();
-			for(int i = 0; i < macroBlocks.size(); i++){
-				fullSearch( macroBlocks.get(i), n, p );
-				//System.out.print(macroBlocks.get(i).y + " ");
+			bw.newLine();
+			for(int i = 0; i < targetBlocks.size(); i++){
 				
-				if(macroBlocks.get(i).y > curRow){
-					curRow = macroBlocks.get(i).y;
-					System.out.println();
+				if(targetBlocks.get(i).y > curRow){
+					curRow = targetBlocks.get(i).y;
 					bw.newLine();
 				}
-				System.out.print("["+macroBlocks.get(i).dx+","+macroBlocks.get(i).dy+"] ");
-				bw.write("["+macroBlocks.get(i).dx+","+macroBlocks.get(i).dy+"] ");
-				macroBlocks.get(i).composeError(err);
+				bw.write("["+targetBlocks.get(i).dx+","+targetBlocks.get(i).dy+"] ");
+				targetBlocks.get(i).composeError(err);
 			}
+			System.out.println("Successfully wrote to mv.txt");
 		} catch (Exception e){
 			e.printStackTrace();
 		} finally {
@@ -132,13 +183,11 @@ public class MC {
 		err.display("test");
 	}
 	
-	public void makeMacroBlocks(Image reference, Image target, int n, int p){
-		macroBlocks = new ArrayList<MacroBlock>();
+	public void makeMacroBlocks(Image target, int n, int p, List<MacroBlock> container){
 		
 		for(int j = 0; j < target.getH(); j+=n){
 			for(int i = 0; i < target.getW(); i+=n){
-				macroBlocks.add(new MacroBlock(i, j, n, 't'));
-				//fullSearch(reference, target, p, i, j, n); 
+				container.add(new MacroBlock(i, j, n, 't'));
 			}
 		}
 	}
@@ -179,8 +228,7 @@ public class MC {
 		
 		for(int j = 0; j < match.n; j++){
 			for(int i = 0; i < match.n; i++){
-				errors[i][j] = Math.abs(tar.getValue(i, j) - match.getValue(i, j));
-				//System.out.println(errors[i][j]);
+				errors[i][j] = Math.abs(tar.valuesGray[i][j] - match.valuesGray[i][j]);
 			}
 		}
 		
@@ -189,11 +237,11 @@ public class MC {
 	
 	public double msd (MacroBlock ref, MacroBlock tar){
 		double diff = 0, total = 0;
-		int n = ref.getMacroBlockSize();
+		int n = ref.n;
 		
 		for(int y = 0; y < n; y++){
 			for(int x = 0; x < n; x++){
-				diff = ref.getValue(x, y) - tar.getValue(x, y);
+				diff = ref.valuesGray[x][y] - tar.valuesGray[x][y];
 				total += (diff * diff);
 			}
 		}

@@ -14,7 +14,7 @@ public class CS451_Miyamoto
   public static void main(String[] args)
   {
   	Scanner scan = new Scanner(System.in);
-  	int i1= -1, i2 = -1, i3 = -1;
+  	int i1= -1, i2 = -1, i3 = -1, i4 = -1;
   	    
 	do{
 	    if(args[0].equals("1") && args.length == 2){
@@ -126,18 +126,72 @@ public class CS451_Miyamoto
       		i1 = 4;
       	}
       	else if (args[0].equals("4") && args.length == 1 ){
-      		int n_choice = -1;
-      		/*
-      		while( n_choice < 0 || n_choice > 5){
-		      	System.out.print("\nPlease enter n value (0-5) for quantization : ");
-		      	n_choice = scan.nextInt();
-      		}
-      		*/
-      		MC Hammer = new MC(16, 4);
-      		
-      		i1 = 4;
+	      	System.out.println("Main Menu-----------------------------------");
+	      	System.out.println("1. Block-Based Motion Compensation");
+	      	System.out.println("2. Removing Moving Objects (based on IDB)");
+	      	System.out.println("3. Image Retrieval");
+	      	System.out.println("4. Quit");
+	      	System.out.print("\nPlease enter the task number [1-4]: ");
+	      	i4 = scan.nextInt();
+	      	switch(i4){
+	      	case 1: {
+	      		int n = 0, p = 0;
+	      		Image ref = null, tar = null;
+	      		String fileName;
+	      		
+	      		while( n != 8 && n != 16 && n != 32){
+		      		System.out.println("Enter n (8, 16, 32) : ");
+		      		n = scan.nextInt();
+	      		}
+	      		while( p != 4 && p != 8 && p != 12){
+	      			System.out.println("Enter p (4, 8, 12) : ");
+	      			p = scan.nextInt();
+	      		}
+	      		while( tar == null || tar.getSize() == 0 ){
+	      			System.out.println("Enter file name for TARGET image:\n(Example: Walk_002.ppm)");
+	      			fileName = scan.next();
+	      			tar = new Image(fileName);
+	      		}
+	      		while( ref == null || ref.getSize() == 0 ){
+	      			System.out.println("Enter file name for REFERENCE image:\n(Example: Walk_001.ppm)");
+	      			fileName = scan.next();
+	      			ref = new Image(fileName);
+	      		}
+		      	System.out.println("Settings: n = " + n + ", p = " + p);
+	      		MC Hammer = new MC(n, p,  ref,  tar);
+	      		Hammer.mv2txt();
+		      	break;
+	      	}
+	      	case 2 : {
+	      		Image ref = null, tar = null;
+	      		int n = 0;
+	      		String fileName = "Walk_";
+	      		while( n < 19 || n > 179 ){
+	      			System.out.println("Enter TARGET frame (between 19 and 179): ");
+	      			n = scan.nextInt();
+	      			if(n < 100)
+	      				fileName += "0";
+	      			tar = new Image(fileName + n + ".ppm");
+	      		}
+	      		if(n == 100 || n == 101)
+	      			fileName = "Walk_";
+	      		ref = new Image(fileName + Integer.toString(n-2) + ".ppm");
+	      		MC Hammer = new MC(16, 4, ref, tar);
+	      		
+	    		Image fifth = new Image("Walk_005.ppm");
+	      		Hammer.rmMovingObj(fifth);
+	      		
+	      		break;
+	      	}
+
+	    	case 4 : System.out.println("Quitting.");
+    			break;
+	    	default : System.out.println("Invalid Task Number.");
+    			break;
+	      	}
+	      	i1 = 4;
       	}
-	} while (i1 != 4 && i2 != 3);
+	} while (i1 != 4 && i2 != 3 && i4 != 4);
     	scan.close();
         System.out.println("--Good Bye--");
     
