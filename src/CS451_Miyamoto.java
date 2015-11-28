@@ -1,5 +1,9 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /*******************************************************
@@ -159,7 +163,8 @@ public class CS451_Miyamoto
 	      		}
 		      	System.out.println("Settings: n = " + n + ", p = " + p);
 	      		MC Hammer = new MC(n, p,  ref,  tar);
-	      		Hammer.mv2txt();
+	      		Image err = new  Image(ref.getW(), ref.getH());
+	      		Hammer.mv2txt(err, ref, tar);
 		      	break;
 	      	}
 	      	case 2 : {
@@ -183,13 +188,77 @@ public class CS451_Miyamoto
 	      		
 	      		break;
 	      	}
+	      	
+	      	case 3: {
+	      		Image ref = null, tar = null;
+	      		int n = 0;
+	      		String fileName = "Walk_";
+	      		while( n < 1 || n > 194 ){
+	      			System.out.println("Enter TARGET frame: ");
+	      			n = scan.nextInt();
+	      		}
+	      		
+      			if(n < 100 && n > 9)
+      				fileName += "0";
+      			else if(n < 10)
+      				fileName += "00";
+      			tar = new Image(fileName + n + ".ppm");
+
+	      		MC Hammer;
+	      		String refFileName;
+	      		List<Frame> stats = new ArrayList<Frame>();
+	      		
+	      		for(int i = 1; i < 194; i++){
+	      			if(i != n){
+		      			refFileName = "Walk_";
+		      			if(i < 10)
+		      				refFileName += "00";
+		      			else if (i < 100)
+		      				refFileName += "0";
+		      			else ;
+		      			ref = new Image(refFileName + i + ".ppm");
+		      			Hammer = new MC(16, 4, ref, tar);
+		      			int stat = Hammer.similarity() ;
+		      			
+		      			stats.add(new Frame(i, stat));
+	      			}
+	      		}
+
+	      		Collections.sort(stats, new Comparator<Frame>(){
+	      		    public int compare(Frame a, Frame b) {
+	      		        return a.getError() - b.getError();
+	      		    }
+	      		});
+	      		
+	      		int maxVal = stats.get(stats.size()-1).getError();
+	      		
+	      		System.out.println("\nInput image name: " + tar.getFileName() +".ppm");
+	      		System.out.println("Half-pixel Accuracy: Off");
+	      		System.out.println("Top 3 similar images in IDB");
+	      		
+	      		for(int f = 0; f < 3; f++){
+	      			int val = stats.get(f).getError();
+	      			int frame = stats.get(f).getIndex();
+	      			
+	      			double percent = 1 - (val / (double) maxVal );
+	      			fileName = "Walk_";
+	      			if(frame < 10)
+	      				fileName += "00";
+	      			else if (frame < 100)
+	      				fileName += "0";
+	      			else ;
+	      			System.out.println("\t" + fileName + frame + ".ppm : "  + "\t\t" + percent * 100 + "%");
+	      			
+	      		}	
+	      		break;
+	      	}
 
 	    	case 4 : System.out.println("Quitting.");
     			break;
 	    	default : System.out.println("Invalid Task Number.");
     			break;
 	      	}
-	      	i1 = 4;
+
       	}
 	} while (i1 != 4 && i2 != 3 && i4 != 4);
     	scan.close();
@@ -199,6 +268,7 @@ public class CS451_Miyamoto
     System.exit(0);
   }
 
+  
   public static void usage()
   {
     System.out.println("\nUsage: java CS451_Miyamoto [homework number] [inputfile]\n");
