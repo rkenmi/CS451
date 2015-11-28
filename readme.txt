@@ -1,3 +1,4 @@
+Homework 4 - Block-based Motion Compensation 
 Homework 3 - DCT-Based Image Compression
 Homework 2 - Aliasing and Dictionary Coding
 Homework 1 - Image Quantization
@@ -8,6 +9,28 @@ Computer Science Department
 California State University, Los Angeles
 
 Student: Rick Miyamoto
+
+Homework 4 - Block-based Motion Compensation 
+======================================
+For the entirety of this program to run correctly, all the IDB files (Walk_001.ppm ~ Walk_200.ppm) are assumed to be in the src directory.
+
+
+Part 1 - n and p will vary according to user input. No half-pixel accuracy is implemented. The error image is saved as errorImg.ppm and the motion vectors are stored in mv.txt.
+
+Part 2 - By default, n = 16 and p = 4. User input of the frame number (integer) is expected. The two approaches of the removed image is saved as removed_DynamicStatic.ppm and removed_5th.ppm.
+
+Part 3 - By default, n = 16 and p = 4. User input of the frame number (integer) is expected. For my similarity/percentage formula, I used the following:
+
+distance = sqrt(dx^2 + dy^2)
+errorSum = sum of all error RGB pixels in a macro block, divided by the max possible RGB values = 256
+macro block unsimilarity value = errorSum * distance
+image unsimilarity value = sum of all macro block unsimilary values
+
+The lower the image unsimilarity value, the higher the actual similarity. i.e., a target image's unsimilarity value of 0 means that it is 100% similar to the reference image.
+Thus, the final percentage formula for each image is:
+
+similarity % = 100 * ( 1 - [ (current image unsimilarity value) / (highest image unsimilarity value out of all the images) ] )
+
 
 Homework 3 - DCT-Based Image Compression
 ======================================
