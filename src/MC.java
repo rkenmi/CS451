@@ -117,7 +117,7 @@ public class MC {
 		}
 	}
 	
-	public int similarity(){
+	public int unsimilarity(){
 		int sum = 0;
 		
 		if(targetBlocks == null)

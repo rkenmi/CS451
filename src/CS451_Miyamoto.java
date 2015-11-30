@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -154,12 +155,12 @@ public class CS451_Miyamoto
 	      		while( tar == null || tar.getSize() == 0 ){
 	      			System.out.println("Enter file name for TARGET image:\n(Example: Walk_002.ppm)");
 	      			fileName = scan.next();
-	      			tar = new Image(fileName);
+	      			tar = new Image("./IDB/" + fileName);
 	      		}
 	      		while( ref == null || ref.getSize() == 0 ){
 	      			System.out.println("Enter file name for REFERENCE image:\n(Example: Walk_001.ppm)");
 	      			fileName = scan.next();
-	      			ref = new Image(fileName);
+	      			ref = new Image("./IDB/" + fileName);
 	      		}
 		      	System.out.println("Settings: n = " + n + ", p = " + p);
 	      		MC Hammer = new MC(n, p,  ref,  tar);
@@ -176,14 +177,14 @@ public class CS451_Miyamoto
 	      			n = scan.nextInt();
 	      			if(n < 100)
 	      				fileName += "0";
-	      			tar = new Image(fileName + n + ".ppm");
+	      			tar = new Image("./IDB/" + fileName + n + ".ppm");
 	      		}
 	      		if(n == 100 || n == 101)
 	      			fileName = "Walk_";
-	      		ref = new Image(fileName + Integer.toString(n-2) + ".ppm");
+	      		ref = new Image("./IDB/" + fileName + Integer.toString(n-2) + ".ppm");
 	      		MC Hammer = new MC(16, 4, ref, tar);
 	      		
-	    		Image fifth = new Image("Walk_005.ppm");
+	    		Image fifth = new Image("./IDB/Walk_005.ppm");
 	      		Hammer.rmMovingObj(fifth);
 	      		
 	      		break;
@@ -192,37 +193,34 @@ public class CS451_Miyamoto
 	      	case 3: {
 	      		Image ref = null, tar = null;
 	      		int n = 0;
-	      		String fileName = "Walk_";
+	      		String currFile = "./IDB/Walk_";
 	      		while( n < 1 || n > 194 ){
-	      			System.out.println("Enter TARGET frame: ");
+	      			System.out.println("Enter TARGET frame (between 1 and 200): ");
 	      			n = scan.nextInt();
 	      		}
 	      		
       			if(n < 100 && n > 9)
-      				fileName += "0";
+      				currFile += "0";
       			else if(n < 10)
-      				fileName += "00";
-      			tar = new Image(fileName + n + ".ppm");
+      				currFile += "00";
+      			
+      			currFile = currFile + n + ".ppm";
+      			tar = new Image(currFile);
 
 	      		MC Hammer;
-	      		String refFileName;
 	      		List<Frame> stats = new ArrayList<Frame>();
 	      		
-	      		for(int i = 1; i < 194; i++){
-	      			if(i != n){
-		      			refFileName = "Walk_";
-		      			if(i < 10)
-		      				refFileName += "00";
-		      			else if (i < 100)
-		      				refFileName += "0";
-		      			else ;
-		      			ref = new Image(refFileName + i + ".ppm");
-		      			Hammer = new MC(16, 4, ref, tar);
-		      			int stat = Hammer.similarity() ;
-		      			
-		      			stats.add(new Frame(i, stat));
-	      			}
-	      		}
+	      		File[] files = new File("./IDB").listFiles();
+	      		
+	      		if(files != null)
+			      	for (File file : files) {
+			      	    if (file.isFile() && !("./IDB/"+file.getName()).equals(currFile)) {
+			      	        ref = new Image("./IDB/" + file.getName());
+			      	        Hammer = new MC(16, 4, ref, tar);
+			      	        int stat = Hammer.unsimilarity();
+			      	        stats.add(new Frame(file.getName(), stat));
+			      	    }
+			      	}
 
 	      		Collections.sort(stats, new Comparator<Frame>(){
 	      		    public int compare(Frame a, Frame b) {
@@ -238,17 +236,8 @@ public class CS451_Miyamoto
 	      		
 	      		for(int f = 0; f < 3; f++){
 	      			int val = stats.get(f).getError();
-	      			int frame = stats.get(f).getIndex();
-	      			
 	      			double percent = 1 - (val / (double) maxVal );
-	      			fileName = "Walk_";
-	      			if(frame < 10)
-	      				fileName += "00";
-	      			else if (frame < 100)
-	      				fileName += "0";
-	      			else ;
-	      			System.out.println("\t" + fileName + frame + ".ppm : "  + "\t\t" + percent * 100 + "%");
-	      			
+	      			System.out.println("\t" + stats.get(f).getFileName()  + "\t\t" + percent * 100 + "%");
 	      		}	
 	      		break;
 	      	}

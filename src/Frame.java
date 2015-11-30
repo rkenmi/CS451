@@ -1,10 +1,10 @@
 
 public class Frame {
 	int error;
-	int index;
+	String fileName;
 	
-	public Frame(int i, int e){
-		index = i;
+	public Frame(String fN, int e){
+		fileName = fN;
 		error = e;
 	}
 	
@@ -16,18 +16,7 @@ public class Frame {
 		return error;
 	}
 	
-	public void setIndex(int i){
-		index = i;
+	public String getFileName(){
+		return fileName;
 	}
-	
-	public int getIndex(){
-		return index;
-	}
-	
-    public int compare(Frame o) {
-        if(error > o.getError())
-        	return 1;
-        else
-        	return 0;
-    }
 }

@@ -12,7 +12,7 @@ Student: Rick Miyamoto
 
 Homework 4 - Block-based Motion Compensation 
 ======================================
-For the entirety of this program to run correctly, all the IDB files (Walk_001.ppm ~ Walk_200.ppm) are assumed to be in the src directory.
+Important! : For the entirety of this program to run correctly, all the IDB files (Walk_001.ppm ~ Walk_200.ppm) are assumed to be in the src/IDB/ directory.
 
 
 Part 1 - n and p will vary according to user input. No half-pixel accuracy is implemented. The error image is saved as errorImg.ppm and the motion vectors are stored in mv.txt.
